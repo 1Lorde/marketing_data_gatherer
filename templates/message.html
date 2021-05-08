@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="message is-dark" id="card_shadow">
+        <div class="message-header">
+            <div class="level-left">
+                {% block message_header %}
+                {% endblock %}
+            </div>
+        </div>
+        <div class="message-body">
+            {% block message_body %}
+            {% endblock %}
+        </div>
+    </div>
+
+    {% block message_pagination %}
+        {% if pagination_data %}
+            <nav class="pagination is-right" role="navigation" aria-label="pagination">
+                {% if pagination_data['current'] != 1 %}
+                    <a class="pagination-previous"
+                       href="{{ previous_link }}">
+                        Previous
+                    </a>
+                {% else %}
+                    <button class="pagination-previous" disabled>
+                        Previous
+                    </button>
+                {% endif %}
+
+                {% if pagination_data['current'] != pagination_data['last'] %}
+                    <a class="pagination-next"
+                       href="{{ next_link }}">
+                        Next
+                    </a>
+                {% else %}
+                    <button class="pagination-previous" disabled>
+                        Next
+                    </button>
+                {% endif %}
+
+                <ul class="pagination-list">
+                    {% if pagination_data['current'] != pagination_data['first'] %}
+                        <li>
+                            <a class="pagination-link"
+                               href="{{ first_link }}">
+                                {{ pagination_data['first'] }}
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% if pagination_data['previous'] - 1 > pagination_data['first'] %}
+                        <li><span class="pagination-ellipsis">&hellip;</span></li>
+                    {% endif %}
+
+                    {% if pagination_data['previous'] > pagination_data['first'] %}
+                        <li>
+                            <a class="pagination-link"
+                               href="{{ previous_link }}">
+                                {{ pagination_data['previous'] }}
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <li>
+                        <a class="pagination-link is-current"
+                           href="{{ current_link }}">
+                            {{ pagination_data['current'] }}
+                        </a>
+                    </li>
+
+                    {% if pagination_data['next'] < pagination_data['last'] %}
+                        <li>
+                            <a class="pagination-link"
+                               href="{{ next_link }}">
+                                {{ pagination_data['next'] }}
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% if pagination_data['next'] + 1 < pagination_data['last'] %}
+                        <li><span class="pagination-ellipsis">&hellip;</span></li>
+                    {% endif %}
+
+                    {% if pagination_data['next'] <= pagination_data['last'] %}
+                        <li>
+                            <a class="pagination-link"
+                               href="{{ last_link }}">
+                                {{ pagination_data['last'] }}
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% endblock %}
+
+{% endblock %}

@@ -1,0 +1,16 @@
+[Unit]
+Description = Flask Application for Bryan Party
+After = network.target # Assuming you want to start after network interfaces are made available
+
+[Service]
+Type = simple
+WorkingDirectory = /root/bryan_party
+ExecStart = /root/bryan_party/venv/bin/python3 /root/bryan_party/app.py
+User = root
+Group = root
+Restart = on-failure
+RestartSec = 5
+TimeoutStartSec = infinity
+
+[Install]
+WantedBy = multi-user.target
