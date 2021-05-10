@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bryan's Project</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
+    <script type="module" src="https://unpkg.com/ionicons@5.4.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule="" src="https://unpkg.com/ionicons@5.4.0/dist/ionicons/ionicons.js"></script>
+    <style>
+        html {
+            background-color: #F5F5F5;
+        }
+
+        #card_shadow {
+            box-shadow: rgba(100, 100, 111, 0.2) 0 7px 29px 0;
+        }
+
+        ion-icon {
+            font-size: 20px;
+        }
+
+        .table_div {
+            max-height: 55vh;
+            overflow: auto;
+            border: 2px dashed darkgrey;
+        }
+
+        td {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        thead th {
+            background: #F0F0F0;
+            position: sticky;
+            top: 0;
+        }
+
+        .overflow {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+
+<body>
+<section class="container is-fluid" id="hero">
+    <nav class="section">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item has-text-centered">
+                    <div class="level">
+                        <ion-icon size="large pr-2" name="analytics-outline"></ion-icon>
+                        <span class="title is-4">
+                            <span class="title is-4 has-text-link">Bryan's</span>_Project
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                    <a href="{{ url_for('current_campaigns') }}" class="navbar-item title is-6">
+                        <div class="level">
+                            <ion-icon size="large" name="bar-chart-outline"></ion-icon>
+                            <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="level-item">
+                    <a href="{{ url_for('current_sources') }}" class="navbar-item title is-6">
+                        <div class="level">
+                            <ion-icon size="large" name="stats-chart-outline"></ion-icon>
+                            <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% block panel %}
+    {% endblock %}
+
+    <div id="workspace">
+        {% block breadcrumbs %}
+        {% endblock %}
+        <div class="columns">
+            <div class="column">
+                {% block content %}
+                {% endblock %}
+            </div>
+
+            <div class="column is-one-fifth">
+                {% block side_menu %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

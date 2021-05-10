@@ -1,6 +1,6 @@
 [Unit]
 Description = Gather data from Binom and Push House APIs
-After = network.target # Assuming you want to start after network interfaces are made available
+After = network.target
 
 [Service]
 Type = simple

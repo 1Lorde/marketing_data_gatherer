@@ -1,6 +1,6 @@
 [Unit]
-Description = Flask Application for Bryan Party
-After = network.target # Assuming you want to start after network interfaces are made available
+Description = Marketing data web application
+After = network.target
 
 [Service]
 Type = simple

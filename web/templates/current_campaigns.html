@@ -1,0 +1,85 @@
+{% extends "message.html" %}
+
+{% set pagination_source='current_campaigns' %}
+
+{% set previous_link=url_for(
+                        pagination_source,
+                        page=pagination_data['previous'],
+                        start=start if start else None,
+                        end=end if end else None) %}
+
+{% set next_link=url_for(
+                        pagination_source,
+                        page=pagination_data['next'],
+                        start=start if start else None,
+                        end=end if end else None) %}
+
+{% set first_link=url_for(
+                        pagination_source,
+                        page=pagination_data['first'],
+                        start=start if start else None,
+                        end=end if end else None) %}
+
+{% set current_link=url_for(
+                        pagination_source,
+                        page=pagination_data['current'],
+                        start=start if start else None,
+                        end=end if end else None) %}
+
+{% set last_link=url_for(
+                        pagination_source,
+                        page=pagination_data['last'],
+                        start=start if start else None,
+                        end=end if end else None) %}
+
+
+{% block panel %}
+    <div class="level"></div>
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
+{% block message_header %}
+    <ion-icon size="large" name="pulse-outline"></ion-icon>
+    <span class="pl-2">Live Campaigns</span>
+{% endblock %}
+
+{% block message_body %}
+    <div class="table_div">
+        {{ table|safe }}
+    </div>
+{% endblock %}
+
+{% block side_menu %}
+    <div class="box">
+        <aside class="menu">
+            <div class="block">
+                <div class="level-left">
+                    <ion-icon class="has-text-link" size="large"
+                              name="bar-chart-outline"></ion-icon>
+                    <span class="subtitle pl-2">Campaigns</span>
+                </div>
+                <hr/>
+
+                <p class="heading is-size-6 has-text-centered">Live Campaigns</p>
+
+                <hr/>
+                <a href="{{ url_for('filtered_campaigns') }}" class="navbar-item title is-6 m-0">
+                    <div class="level">
+                        <ion-icon size="large" name="filter-outline"></ion-icon>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns Filter</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('extracted_campaigns') }}" class="navbar-item title is-6 m-0">
+                    <div class="level">
+                        <ion-icon size="large" name="cloud-download-outline"></ion-icon>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns Extractor</span>
+                    </div>
+                </a>
+            </div>
+        </aside>
+    </div>
+{% endblock %}
+
+

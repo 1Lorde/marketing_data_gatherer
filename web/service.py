@@ -15,16 +15,20 @@ def get_path_args():
     start = request.args.get('start')
     end = request.args.get('end')
 
-    if start and end:
-        start = start + ' 00:00:00'
-        end = end + ' 23:59:59'
-
     return page, start, end
 
 
-def get_pagination_metadata(page, data_query):
+def get_pagination_metadata_from_query(page, data_query):
     rows_per_page = 12
     last_page = math.ceil(data_query.count() / rows_per_page)
+
+    return {'current': page, 'next': page + 1, 'previous': page - 1,
+            'first': 1, 'last': last_page, 'rows_per_page': rows_per_page}
+
+
+def get_pagination_metadata_from_count(page, count):
+    rows_per_page = 12
+    last_page = math.ceil(count / rows_per_page)
 
     return {'current': page, 'next': page + 1, 'previous': page - 1,
             'first': 1, 'last': last_page, 'rows_per_page': rows_per_page}
@@ -36,13 +40,13 @@ def paginate_data(metadata, query):
     return query.items
 
 
-def render_empty_campaigns():
-    return render_template('stats_campaigns.html',
-                           table='<p class="subtitle is-italic" style="padding:20px;">Sorry, no campaigns for your request.</p>',
+def render_empty_campaigns(template):
+    return render_template(template,
+                           table='<p class="subtitle is-italic" style="padding:20px;">No campaigns for your request. Enter some parameters in rightside menu.</p>',
                            pagination_data=None)
 
 
-def render_empty_sources():
-    return render_template('stats_sources.html',
-                           table='<p class="subtitle is-italic" style="padding:20px;">Sorry, no sources for your request.</p>',
+def render_empty_sources(template):
+    return render_template(template,
+                           table='<p class="subtitle is-italic" style="padding:20px;">No sources for your request. Enter some parameters in rightside menu.</p>',
                            pagination_data=None)

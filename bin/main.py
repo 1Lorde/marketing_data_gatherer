@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import schedule
 
 from api_utils import get_campaigns, get_sources
-from app import app
+from web.app import app
 from bin.utils import remove_data_fetched_at, save_data_to_db, get_last_fetched, set_last_fetched
 from models import db
 from utils import set_fetched_at, read_config, init_logger
@@ -23,6 +23,7 @@ def job():
     save_data_period_end = datetime(fetched_at.year, fetched_at.month, fetched_at.day, 1, 1, 0)
 
     with app.test_request_context():
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../data/db.sqlite'
         db.init_app(app)
 
         if save_data_period_start <= fetched_at <= save_data_period_end:

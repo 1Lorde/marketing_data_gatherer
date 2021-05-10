@@ -8,12 +8,16 @@ import utils
 import models
 
 
-def get_binom_campaigns_url():
+def get_binom_campaigns_url(start_date=None, end_date=None):
     campaigns_url = utils.config['binom_urls']['campaigns']
 
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    campaigns_url = campaigns_url.replace('[DATE_S]', current_date)
-    campaigns_url = campaigns_url.replace('[DATE_E]', current_date)
+    if start_date and end_date:
+        campaigns_url = campaigns_url.replace('[DATE_S]', start_date)
+        campaigns_url = campaigns_url.replace('[DATE_E]', end_date)
+    else:
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        campaigns_url = campaigns_url.replace('[DATE_S]', current_date)
+        campaigns_url = campaigns_url.replace('[DATE_E]', current_date)
 
     binom_api_key = utils.config["api_keys"]["binom"]
     campaigns_url = f'{campaigns_url}&api_key={binom_api_key}'
@@ -21,21 +25,29 @@ def get_binom_campaigns_url():
     return campaigns_url
 
 
-def get_push_house_campaign_url(campaign_name):
+def get_push_house_campaign_url(campaign_name, start_date=None, end_date=None):
     stats_url = utils.config['push_house_urls']['stats']
     push_house_api_key = utils.config["api_keys"]["push_house"]
-    current_date = datetime.now().strftime("%Y-%m-%d")
 
-    stats_url = f'{stats_url}{push_house_api_key}/date/{current_date}/{current_date}/{campaign_name}'
+    if start_date and end_date:
+        stats_url = f'{stats_url}{push_house_api_key}/date/{start_date}/{end_date}/{campaign_name}'
+    else:
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        stats_url = f'{stats_url}{push_house_api_key}/date/{current_date}/{current_date}/{campaign_name}'
+
     return stats_url
 
 
-def get_binom_sources_url():
+def get_binom_sources_url(start_date=None, end_date=None):
     sources_url = utils.config['binom_urls']['traffic_sources']
 
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    sources_url = sources_url.replace('[DATE_S]', current_date)
-    sources_url = sources_url.replace('[DATE_E]', current_date)
+    if start_date and end_date:
+        sources_url = sources_url.replace('[DATE_S]', start_date)
+        sources_url = sources_url.replace('[DATE_E]', end_date)
+    else:
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        sources_url = sources_url.replace('[DATE_S]', current_date)
+        sources_url = sources_url.replace('[DATE_E]', current_date)
 
     binom_api_key = utils.config["api_keys"]["binom"]
     sources_url = f'{sources_url}&api_key={binom_api_key}'
@@ -43,12 +55,16 @@ def get_binom_sources_url():
     return sources_url
 
 
-def get_push_house_sources_url(campaign_name):
+def get_push_house_sources_url(campaign_name, start_date=None, end_date=None):
     stats_url = utils.config['push_house_urls']['stats']
     push_house_api_key = utils.config["api_keys"]["push_house"]
-    current_date = datetime.now().strftime("%Y-%m-%d")
 
-    stats_url = f'{stats_url}{push_house_api_key}/subacc/{current_date}/{current_date}/{campaign_name}'
+    if start_date and end_date:
+        stats_url = f'{stats_url}{push_house_api_key}/subacc/{start_date}/{end_date}/{campaign_name}'
+    else:
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        stats_url = f'{stats_url}{push_house_api_key}/subacc/{current_date}/{current_date}/{campaign_name}'
+
     return stats_url
 
 
@@ -93,9 +109,13 @@ def parse_sources_costs_json(campaign_name, sources, json):
     return sources
 
 
-def get_campaigns_revenues():
+def get_campaigns_revenues(start_date=None, end_date=None):
     try:
-        url = get_binom_campaigns_url()
+        if start_date and end_date:
+            url = get_binom_campaigns_url(start_date, end_date)
+        else:
+            url = get_binom_campaigns_url()
+
         response = requests.get(url)
 
         # If the response was successful, no Exception will be raised
@@ -109,10 +129,14 @@ def get_campaigns_revenues():
         return parse_campaigns_json(response.json())
 
 
-def get_campaigns_costs(campaigns):
+def get_campaigns_costs(campaigns, start_date=None, end_date=None):
     for campaign in campaigns:
         try:
-            url = get_push_house_campaign_url(campaign.name)
+            if start_date and end_date:
+                url = get_push_house_campaign_url(campaign.name, start_date, end_date)
+            else:
+                url = get_push_house_campaign_url(campaign.name)
+
             response = requests.get(url)
 
             # If the response was successful, no Exception will be raised
@@ -136,17 +160,26 @@ def get_campaigns_profit(campaigns):
     return campaigns
 
 
-def get_campaigns():
-    campaigns = get_campaigns_revenues()
-    campaigns = get_campaigns_costs(campaigns)
+def get_campaigns(start_date=None, end_date=None):
+    if start_date and end_date:
+        campaigns = get_campaigns_revenues(start_date, end_date)
+        campaigns = get_campaigns_costs(campaigns, start_date, end_date)
+    else:
+        campaigns = get_campaigns_revenues()
+        campaigns = get_campaigns_costs(campaigns)
+
     campaigns = get_campaigns_profit(campaigns)
 
     return campaigns
 
 
-def get_sources_revenues():
+def get_sources_revenues(start_date=None, end_date=None):
     try:
-        url = get_binom_sources_url()
+        if start_date and end_date:
+            url = get_binom_sources_url(start_date, end_date)
+        else:
+            url = get_binom_sources_url()
+
         response = requests.get(url)
 
         # If the response was successful, no Exception will be raised
@@ -160,10 +193,14 @@ def get_sources_revenues():
         return parse_sources_json(response.json())
 
 
-def get_sources_costs(campaigns, sources):
+def get_sources_costs(campaigns, sources, start_date=None, end_date=None):
     for campaign in campaigns:
         try:
-            url = get_push_house_sources_url(campaign.name)
+            if start_date and end_date:
+                url = get_push_house_sources_url(campaign.name, start_date, end_date)
+            else:
+                url = get_push_house_sources_url(campaign.name)
+
             response = requests.get(url)
 
             # If the response was successful, no Exception will be raised
@@ -186,9 +223,9 @@ def get_sources_profit(sources):
     return sources
 
 
-def get_sources(campaigns):
-    sources = get_sources_revenues()
-    sources = get_sources_costs(campaigns, sources)
+def get_sources(campaigns, start_date=None, end_date=None):
+    sources = get_sources_revenues(start_date, end_date)
+    sources = get_sources_costs(campaigns, sources, start_date, end_date)
     sources = get_sources_profit(sources)
 
     return sources

@@ -1,0 +1,135 @@
+{% extends "message.html" %}
+
+{% set pagination_source='extracted_sources' %}
+
+{% set previous_link=url_for(
+                        pagination_source,
+                        page=pagination_data['previous'],
+                        start=start if start else None,
+                        end=end if end else None) %}
+
+{% set next_link=url_for(
+                        pagination_source,
+                        page=pagination_data['next'],
+                        start=start if start else None,
+                        end=end if end else None) %}
+
+{% set first_link=url_for(
+                        pagination_source,
+                        page=pagination_data['first'],
+                        start=start if start else None,
+                        end=end if end else None) %}
+
+{% set current_link=url_for(
+                        pagination_source,
+                        page=pagination_data['current'],
+                        start=start if start else None,
+                        end=end if end else None) %}
+
+{% set last_link=url_for(
+                        pagination_source,
+                        page=pagination_data['last'],
+                        start=start if start else None,
+                        end=end if end else None) %}
+
+
+{% block panel %}
+    <div class="level"></div>
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
+{% block message_header %}
+    <ion-icon size="large" name="cloud-download-outline"></ion-icon>
+    {% if start and end %}
+        <span class="pl-2">Extracted SourceIds for {{ start }} -- {{ end }}</span>
+    {% else %}
+        <span class="pl-2">Extracted SourceIds</span>
+    {% endif %}
+{% endblock %}
+
+{% block message_body %}
+    <div class="table_div">
+        {{ table|safe }}
+    </div>
+{% endblock %}
+
+{% block side_menu %}
+    <div class="box">
+        <aside class="menu">
+            <div class="block">
+                <div class="level-left">
+                    <ion-icon class="has-text-info" size="large"
+                              name="stats-chart-outline"></ion-icon>
+                    <span class="subtitle pl-2">SourceIds</span>
+                </div>
+                <hr/>
+
+                <p class="heading is-size-6 has-text-centered">Extract from API</p>
+                <ul class="menu-list">
+                    <li>
+                        <div class="block p-3">
+                            <form method="post">
+                                <div class="field has-addons">
+                                    <div class="control">
+                                        <input class="input is-small" type="number"
+                                               name="days_sources"
+                                               placeholder="Enter number of days">
+                                    </div>
+                                    <div class="control">
+                                        <input class="button is-link is-small" type="submit"
+                                               value="Extract">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('extracted_sources', start=yesterday, end=yesterday) }}"
+                           class="navbar-item title is-6">
+                            <div class="level-left">
+                                <ion-icon name="today-outline"></ion-icon>
+                                <span class="pl-2">Yesterday</span>
+                            </div>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('extracted_sources', start=three_days, end=yesterday) }}"
+                           class="navbar-item title is-6">
+                            <div class="level-left">
+                                <ion-icon name="calendar-outline"></ion-icon>
+                                <span class="pl-2">Last 3 days</span>
+                            </div>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('extracted_sources', start=week, end=yesterday) }}"
+                           class="navbar-item title is-6">
+                            <div class="level-left">
+                                <ion-icon name="calendar-outline"></ion-icon>
+                                <span class="pl-2">Last 7 days</span>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+                <hr/>
+                <a href="{{ url_for('current_sources') }}" class="navbar-item title is-6 m-0">
+                    <div class="level">
+                        <ion-icon size="large" name="pulse-outline"></ion-icon>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">Live SourceIds</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('filtered_sources') }}" class="navbar-item title is-6 m-0">
+                    <div class="level">
+                        <ion-icon size="large" name="filter-outline"></ion-icon>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds Filter</span>
+                    </div>
+                </a>
+            </div>
+        </aside>
+    </div>
+{% endblock %}

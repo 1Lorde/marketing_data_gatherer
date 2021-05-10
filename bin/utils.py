@@ -5,10 +5,12 @@ import yaml
 
 from models import db, Campaign, TrafficSource
 
+config = None
+
 
 def read_config():
     global config
-    with open("bin/config.yml", "r") as ymlfile:
+    with open("config.yml", "r") as ymlfile:
         config = yaml.load(ymlfile, Loader=yaml.FullLoader)
 
 
