@@ -11,7 +11,8 @@ from bin.utils import read_config, init_logger
 from models import db, Campaign, Source
 from web.service import paginate_data, get_pagination_metadata_from_query, get_path_args, render_empty_campaigns, \
     render_empty_sources
-from web.tables import CampaignTable, SourceTable, ExtractedCampaignTable, ExtractedSourceTable
+from web.tables import CampaignTable, SourceTable, ExtractedCampaignTable, ExtractedSourceTable, FilteredSourceTable, \
+    FilteredCampaignTable
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../data/db.sqlite'
@@ -128,7 +129,7 @@ def filtered_campaigns():
     if len(campaigns_list) == 0:
         return render_empty_campaigns('filtered_campaigns.html')
 
-    table = CampaignTable(campaigns_list)
+    table = FilteredCampaignTable(campaigns_list)
 
     return render_template('filtered_campaigns.html',
                            table=table,
@@ -232,7 +233,7 @@ def filtered_sources():
     if len(sources_list) == 0:
         return render_empty_sources('filtered_sources.html')
 
-    table = SourceTable(sources_list)
+    table = FilteredSourceTable(sources_list)
 
     return render_template('filtered_sources.html',
                            table=table,
