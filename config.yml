@@ -4,7 +4,7 @@ api_keys:
 
 binom_urls:
   campaigns: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=29&date=12&group1=282&group2=1&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
-  traffic_sources: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=29&date=12&group1=282&group2=27&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
+  sources: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=29&date=12&group1=282&group2=27&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
 
 push_house_urls:
   stats: https://push.house/api/statistics/

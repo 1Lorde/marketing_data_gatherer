@@ -3,7 +3,7 @@ from datetime import datetime
 
 import yaml
 
-from models import db, Campaign, TrafficSource
+from models import db, Campaign, Source
 
 config = None
 
@@ -54,5 +54,5 @@ def save_data_to_db(campaigns, sources):
 
 def remove_data_fetched_at(fetched_at):
     Campaign.query.filter_by(fetched_at=fetched_at).delete()
-    TrafficSource.query.filter_by(fetched_at=fetched_at).delete()
+    Source.query.filter_by(fetched_at=fetched_at).delete()
     db.session.commit()

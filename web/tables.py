@@ -25,7 +25,7 @@ class ExtractedCampaignTable(Table):
         return {'style': 'position: sticky; top: 0; '}
 
 
-class TrafficSourceTable(Table):
+class SourceTable(Table):
     classes = ['table', 'is-striped', 'is-hoverable', 'is-fullwidth', 'is-bordered']
     fetched_time = DatetimeCol("Time", datetime_format="HH:mm:ss")
     fetched_at = DatetimeCol("Date", datetime_format="dd-MM-yy")
@@ -39,7 +39,7 @@ class TrafficSourceTable(Table):
         return {'style': 'position: sticky; top: 0; '}
 
 
-class ExtractedTrafficSourceTable(Table):
+class ExtractedSourceTable(Table):
     classes = ['table', 'is-striped', 'is-hoverable', 'is-fullwidth', 'is-bordered']
     name = Col("Source name")
     campaign_name = Col("Campaign name")

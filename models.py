@@ -23,7 +23,7 @@ class Campaign(db.Model):
                f" fetched_at={self.fetched_at})"
 
 
-class TrafficSource(db.Model):
+class Source(db.Model):
     source_id = Column(Integer, primary_key=True)
     name = Column(String)
     campaign_name = Column(String)
@@ -39,5 +39,5 @@ class TrafficSource(db.Model):
         self.revenue = revenue
 
     def __repr__(self):
-        return f"TrafficSource (name={self.name}, revenue={self.revenue}, cost={self.cost}, profit={self.profit}," \
+        return f"Source (name={self.name}, revenue={self.revenue}, cost={self.cost}, profit={self.profit}," \
                f" campaign_name={self.campaign_name}, fetched_at={self.fetched_at})"

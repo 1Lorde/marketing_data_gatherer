@@ -39,7 +39,7 @@ def get_push_house_campaign_url(campaign_name, start_date=None, end_date=None):
 
 
 def get_binom_sources_url(start_date=None, end_date=None):
-    sources_url = utils.config['binom_urls']['traffic_sources']
+    sources_url = utils.config['binom_urls']['sources']
 
     if start_date and end_date:
         sources_url = sources_url.replace('[DATE_S]', start_date)
@@ -94,7 +94,7 @@ def parse_sources_json(json):
 
         name = element['name']
         revenue = float(element['revenue'])
-        source = models.TrafficSource(name, campaign_name, revenue)
+        source = models.Source(name, campaign_name, revenue)
         sources.append(source)
 
     return sources

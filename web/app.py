@@ -8,10 +8,10 @@ from sqlalchemy_utils import database_exists
 
 from bin.api_utils import get_campaigns, get_sources
 from bin.utils import read_config, init_logger
-from models import db, Campaign, TrafficSource
+from models import db, Campaign, Source
 from web.service import paginate_data, get_pagination_metadata_from_query, get_path_args, render_empty_campaigns, \
     render_empty_sources
-from web.tables import CampaignTable, TrafficSourceTable, ExtractedCampaignTable, ExtractedTrafficSourceTable
+from web.tables import CampaignTable, SourceTable, ExtractedCampaignTable, ExtractedSourceTable
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../data/db.sqlite'
@@ -140,15 +140,15 @@ def filtered_campaigns():
 @app.route('/sources/current', methods=['GET', 'POST'])
 def current_sources():
     page_arg, start_arg, end_arg = get_path_args()
-    source_query = TrafficSource.query.order_by(desc(TrafficSource.fetched_at))
+    source_query = Source.query.order_by(desc(Source.fetched_at))
 
     today = str(datetime.datetime.today()).split(' ')[0]
     today_start = datetime.datetime.strptime(today + ' 00:00:00', '%Y-%m-%d %H:%M:%S')
     today_end = datetime.datetime.strptime(today + ' 23:59:59', '%Y-%m-%d %H:%M:%S')
 
     source_query = source_query.filter(
-        and_(TrafficSource.fetched_at >= today_start,
-             TrafficSource.fetched_at <= today_end))
+        and_(Source.fetched_at >= today_start,
+             Source.fetched_at <= today_end))
 
     pagination_metadata = get_pagination_metadata_from_query(page_arg, source_query)
     source_list = paginate_data(pagination_metadata, source_query)
@@ -156,7 +156,7 @@ def current_sources():
     if len(source_list) == 0:
         return render_empty_sources('current_sources.html')
 
-    table = TrafficSourceTable(source_list)
+    table = SourceTable(source_list)
 
     return render_template('current_sources.html',
                            table=table,
@@ -188,7 +188,7 @@ def extracted_sources():
     if not sources:
         return render_empty_sources('extracted_sources.html')
 
-    table = ExtractedTrafficSourceTable(sources)
+    table = ExtractedSourceTable(sources)
 
     return render_template('extracted_sources.html',
                            table=table,
@@ -213,18 +213,18 @@ def filtered_sources():
     page_arg, start_arg, end_arg = get_path_args()
 
     yesterday = datetime.datetime.now() - timedelta(days=1)
-    sources_query = TrafficSource.query.order_by(desc(TrafficSource.fetched_at))
+    sources_query = Source.query.order_by(desc(Source.fetched_at))
 
     if start_arg and end_arg:
         start = start_arg + ' 00:00:00'
         end = end_arg + ' 23:59:59'
         sources_query = sources_query.filter(
-            and_(TrafficSource.fetched_at >= start,
-                 TrafficSource.fetched_at <= end))
+            and_(Source.fetched_at >= start,
+                 Source.fetched_at <= end))
     else:
         sources_query = sources_query.filter(
-            and_(TrafficSource.fetched_at >= yesterday,
-                 TrafficSource.fetched_at <= yesterday))
+            and_(Source.fetched_at >= yesterday,
+                 Source.fetched_at <= yesterday))
 
     pagination_metadata = get_pagination_metadata_from_query(page_arg, sources_query)
     sources_list = paginate_data(pagination_metadata, sources_query)
@@ -232,7 +232,7 @@ def filtered_sources():
     if len(sources_list) == 0:
         return render_empty_sources('filtered_sources.html')
 
-    table = TrafficSourceTable(sources_list)
+    table = SourceTable(sources_list)
 
     return render_template('filtered_sources.html',
                            table=table,
