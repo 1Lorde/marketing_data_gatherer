@@ -1,4 +1,5 @@
 import datetime
+import os
 from datetime import timedelta
 
 from flask import Flask, render_template, redirect, url_for, request
@@ -17,6 +18,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../data/db.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 if not database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
+    if not os.path.exists('../data'):
+        os.mkdir('../data')
     with app.test_request_context():
         db.init_app(app)
         db.create_all()
