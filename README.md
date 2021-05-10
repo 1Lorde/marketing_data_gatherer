@@ -12,6 +12,11 @@
 
 **_systemd/_** - systemd's services for daemonization.
 
+## Build
+1) Create venv: `virtualenv venv`.
+2) Activate venv: `source venv/bin/activate`.
+3) Install requirements: `pip install -r requirements.txt`.
+
 ## Run
 1) Activate venv: `source venv/bin/activate`.
 2) Run web app: `python3 web/run.py`.
