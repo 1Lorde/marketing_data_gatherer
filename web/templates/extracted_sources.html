@@ -42,8 +42,8 @@
 
 {% block message_header %}
     <ion-icon size="large" name="cloud-download-outline"></ion-icon>
-    {% if start and end %}
-        <span class="pl-2">Extracted SourceIds for {{ start }} -- {{ end }}</span>
+    {% if request.args.get('days') %}
+        <span class="pl-2">Extracted SourceIds for last {{ request.args.get('days') }} days</span>
     {% else %}
         <span class="pl-2">Extracted SourceIds</span>
     {% endif %}
