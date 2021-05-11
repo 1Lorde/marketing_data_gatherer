@@ -4,9 +4,13 @@
 
 ## Structure
 
-**_bin/_** - data gathering module, which includes script for working with Binom and Push House APIs.
+**_gatherer/_** - resources for data gathering.
 
-**_web/_** - demonstrating and management module, which includes Flask web application.
+**_web/_** - resources for demonstrating and management Flask web application.
+
+**_utils/_** - utilities for working with Binom and Push House APIs.
+
+**_models/_** - includes db models.
 
 **_data/_** - includes database.
 
@@ -19,5 +23,5 @@
 
 ## Run
 1) Activate venv: `source venv/bin/activate`.
-2) Run web app: `python3 web/run.py`.
-3) Run script: `python3 bin/run.py`.
+2) Run web app: `python3 run_web.py`.
+3) Run script: `python3 run_gatherer.py`.
