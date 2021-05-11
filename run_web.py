@@ -1,30 +1,35 @@
 import datetime
 import os
+import pathlib
+import sys
 from datetime import timedelta
 
 from flask import Flask, render_template, redirect, url_for, request
 from sqlalchemy import desc, and_
 from sqlalchemy_utils import database_exists
 
-from bin.api_utils import get_campaigns, get_sources
-from bin.utils import read_config, init_logger
-from models import db, Campaign, Source
+from utils.api_utils import ApiUtils
+from utils.utils import read_config, init_logger
+from models.models import db, Campaign, Source, ExtractedCampaign, ExtractedSource, DailyCampaign, DailySource
 from web.service import paginate_data, get_pagination_metadata_from_query, get_path_args, render_empty_campaigns, \
     render_empty_sources
 from web.tables import CampaignTable, SourceTable, ExtractedCampaignTable, ExtractedSourceTable, FilteredSourceTable, \
     FilteredCampaignTable
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../data/db.sqlite'
+template_dir = os.path.abspath('web/templates')
+
+app = Flask(__name__, template_folder=template_dir)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data/db.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 if not database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
-    if not os.path.exists('../data'):
-        os.mkdir('../data')
+    if not os.path.exists('data'):
+        os.mkdir('data')
     with app.test_request_context():
         db.init_app(app)
         db.create_all()
 
+api = None
 
 @app.context_processor
 def inject_dates():
@@ -37,7 +42,7 @@ def inject_dates():
 
 @app.route('/campaigns/current', methods=['GET', 'POST'])
 def current_campaigns():
-    page_arg, start_arg, end_arg = get_path_args()
+    page_arg, start_arg, end_arg, days = get_path_args()
     campaign_query = Campaign.query.order_by(desc(Campaign.fetched_at))
 
     today = str(datetime.datetime.today()).split(' ')[0]
@@ -70,17 +75,16 @@ def extracted_campaigns():
             days_campaigns = request.form['days_campaigns'] if request.form['days_campaigns'] else None
 
             if days_campaigns:
-                start = datetime.date.today() - timedelta(int(days_campaigns))
-                end = datetime.date.today() - timedelta(1)
-                return redirect(url_for('extracted_campaigns', start=start, end=end))
+                return redirect(url_for('extracted_campaigns', days=days_campaigns))
         except KeyError:
             pass
 
-    page_arg, start_arg, end_arg = get_path_args()
+    page_arg, start_arg, end_arg, days = get_path_args()
+    campaign_query = ExtractedCampaign.query.order_by(desc(ExtractedCampaign.fetched_at))
 
     campaigns = None
-    if start_arg and end_arg:
-        campaigns = get_campaigns(start_date=start_arg, end_date=end_arg)
+    if days:
+        campaigns = campaign_query.filter_by(last_days=days).all()
 
     if not campaigns:
         return render_empty_campaigns('extracted_campaigns.html')
@@ -107,21 +111,21 @@ def filtered_campaigns():
         except KeyError:
             pass
 
-    page_arg, start_arg, end_arg = get_path_args()
+    page_arg, start_arg, end_arg, days = get_path_args()
 
     yesterday = datetime.datetime.now() - timedelta(days=1)
-    campaign_query = Campaign.query.order_by(desc(Campaign.fetched_at))
+    campaign_query = DailyCampaign.query.order_by(desc(DailyCampaign.fetched_at))
 
     if start_arg and end_arg:
         start = start_arg + ' 00:00:00'
         end = end_arg + ' 23:59:59'
         campaign_query = campaign_query.filter(
-            and_(Campaign.fetched_at >= start,
-                 Campaign.fetched_at <= end))
+            and_(DailyCampaign.fetched_at >= start,
+                 DailyCampaign.fetched_at <= end))
     else:
         campaign_query = campaign_query.filter(
-            and_(Campaign.fetched_at >= yesterday,
-                 Campaign.fetched_at <= yesterday))
+            and_(DailyCampaign.fetched_at >= yesterday,
+                 DailyCampaign.fetched_at <= yesterday))
 
     pagination_metadata = get_pagination_metadata_from_query(page_arg, campaign_query)
     campaigns_list = paginate_data(pagination_metadata, campaign_query)
@@ -140,7 +144,7 @@ def filtered_campaigns():
 
 @app.route('/sources/current', methods=['GET', 'POST'])
 def current_sources():
-    page_arg, start_arg, end_arg = get_path_args()
+    page_arg, start_arg, end_arg, days = get_path_args()
     source_query = Source.query.order_by(desc(Source.fetched_at))
 
     today = str(datetime.datetime.today()).split(' ')[0]
@@ -170,21 +174,19 @@ def current_sources():
 def extracted_sources():
     if request.method == 'POST':
         try:
-            days_campaigns = request.form['days_sources'] if request.form['days_sources'] else None
+            days_sources = request.form['days_sources'] if request.form['days_sources'] else None
 
-            if days_campaigns:
-                start = datetime.date.today() - timedelta(int(days_campaigns))
-                end = datetime.date.today() - timedelta(1)
-                return redirect(url_for('extracted_sources', start=start, end=end))
+            if days_sources:
+                return redirect(url_for('extracted_sources', days=days_sources))
         except KeyError:
             pass
 
-    page_arg, start_arg, end_arg = get_path_args()
+    page_arg, start_arg, end_arg, days = get_path_args()
+    source_query = ExtractedSource.query.order_by(desc(ExtractedSource.fetched_at))
 
     sources = None
-    if start_arg and end_arg:
-        campaigns = get_campaigns(start_date=start_arg, end_date=end_arg)
-        sources = get_sources(campaigns, start_date=start_arg, end_date=end_arg)
+    if days:
+        sources = source_query.filter_by(last_days=days).all()
 
     if not sources:
         return render_empty_sources('extracted_sources.html')
@@ -211,21 +213,21 @@ def filtered_sources():
         except KeyError:
             pass
 
-    page_arg, start_arg, end_arg = get_path_args()
+    page_arg, start_arg, end_arg, days = get_path_args()
 
     yesterday = datetime.datetime.now() - timedelta(days=1)
-    sources_query = Source.query.order_by(desc(Source.fetched_at))
+    sources_query = DailySource.query.order_by(desc(DailySource.fetched_at))
 
     if start_arg and end_arg:
         start = start_arg + ' 00:00:00'
         end = end_arg + ' 23:59:59'
         sources_query = sources_query.filter(
-            and_(Source.fetched_at >= start,
-                 Source.fetched_at <= end))
+            and_(DailySource.fetched_at >= start,
+                 DailySource.fetched_at <= end))
     else:
         sources_query = sources_query.filter(
-            and_(Source.fetched_at >= yesterday,
-                 Source.fetched_at <= yesterday))
+            and_(DailySource.fetched_at >= yesterday,
+                 DailySource.fetched_at <= yesterday))
 
     pagination_metadata = get_pagination_metadata_from_query(page_arg, sources_query)
     sources_list = paginate_data(pagination_metadata, sources_query)
@@ -247,8 +249,9 @@ def root():
     return redirect(url_for('current_campaigns'))
 
 
-def main():
-    read_config()
+if __name__ == '__main__':
+    config = read_config()
+    api = ApiUtils(config)
     init_logger()
 
     db.init_app(app)

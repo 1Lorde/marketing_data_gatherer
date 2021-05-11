@@ -1,4 +1,5 @@
 .idea
 venv
 data/db.sqlite
+gatherer/last_fetched_at
 __pycache__

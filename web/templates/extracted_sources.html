@@ -75,6 +75,7 @@
                                     <div class="control">
                                         <input class="input is-small" type="number"
                                                name="days_sources"
+                                               max="30"
                                                placeholder="Enter number of days">
                                     </div>
                                     <div class="control">
@@ -87,7 +88,7 @@
                     </li>
 
                     <li>
-                        <a href="{{ url_for('extracted_sources', start=yesterday, end=yesterday) }}"
+                        <a href="{{ url_for('extracted_sources', days=1) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="today-outline"></ion-icon>
@@ -97,7 +98,7 @@
                     </li>
 
                     <li>
-                        <a href="{{ url_for('extracted_sources', start=three_days, end=yesterday) }}"
+                        <a href="{{ url_for('extracted_sources', days=3) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="calendar-outline"></ion-icon>
@@ -107,7 +108,7 @@
                     </li>
 
                     <li>
-                        <a href="{{ url_for('extracted_sources', start=week, end=yesterday) }}"
+                        <a href="{{ url_for('extracted_sources', days=7) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="calendar-outline"></ion-icon>

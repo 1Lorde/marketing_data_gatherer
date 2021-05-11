@@ -5,7 +5,7 @@ After = network.target
 [Service]
 Type = simple
 WorkingDirectory = /root/bryan_party
-ExecStart = /root/bryan_party/venv/bin/python3 /root/bryan_party/web/run.py
+ExecStart = /root/bryan_party/venv/bin/python3 /root/bryan_party/run_web.py
 User = root
 Group = root
 Restart = on-failure
