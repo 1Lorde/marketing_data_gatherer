@@ -145,3 +145,26 @@ class ExtractedSource(db.Model):
     def __repr__(self):
         return f"ExtractedSource (name={self.name}, revenue={self.revenue}, cost={self.cost}, profit={self.profit}," \
                f" campaign_name={self.campaign_name}, fetched_at={self.fetched_at})"
+
+
+class CampaignRule(db.Model):
+    rule_id = Column(Integer, primary_key=True)
+    conditions = Column(Integer)
+    campaign_name = Column(String)
+    param1 = Column(String)
+    sign1 = Column(String)
+    value1 = Column(Float)
+    param2 = Column(String)
+    sign2 = Column(String)
+    value2 = Column(Float)
+    param3 = Column(String)
+    sign3 = Column(String)
+    value3 = Column(Float)
+    param4 = Column(String)
+    sign4 = Column(String)
+    value4 = Column(Float)
+    days = Column(Integer)
+    action = Column(String)
+
+    def __repr__(self):
+        return f"CampaignRule (id={self.rule_id})"

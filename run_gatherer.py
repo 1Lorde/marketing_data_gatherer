@@ -2,7 +2,7 @@ import logging
 import time
 from datetime import datetime, timedelta
 
-import schedule
+import schedule as schedule
 
 from gatherer.utils import set_fetched_at, get_last_fetched, save_data_to_db, remove_data_fetched_at, set_last_fetched, \
     campaigns_to_daily, campaigns_to_extracted, sources_to_extracted, remove_extracted_data, sources_to_daily
@@ -46,6 +46,8 @@ def live_job():
         print(campaigns)
         print(sources)
 
+        api.check_rules()
+
 
 def extract_job():
     with app.test_request_context():
@@ -56,11 +58,11 @@ def extract_job():
         end = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(1)
         start = end - timedelta(days)
 
-        logging.info(f'Extracting campaigns for last {days+1} days')
+        logging.info(f'Extracting campaigns for last {days + 1} days')
         campaigns = api.get_campaigns(start, end)
         extracted_campaigns = campaigns_to_extracted(campaigns, days + 1)
 
-        logging.info(f'Extracting sources for last {days+1} days')
+        logging.info(f'Extracting sources for last {days + 1} days')
         sources = api.get_sources(campaigns, start, end)
         extracted_sources = sources_to_extracted(sources, days + 1)
 

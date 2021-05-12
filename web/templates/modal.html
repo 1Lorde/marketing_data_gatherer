@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bryan's Project</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
+    <script type="module" src="https://unpkg.com/ionicons@5.4.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule="" src="https://unpkg.com/ionicons@5.4.0/dist/ionicons/ionicons.js"></script>
+</head>
+
+<body>
+<div class="modal is-active">
+    <div class="modal-background"></div>
+    <div class="modal-content" style="width: 50%">
+        <div class="block">
+            <a class="button is-dark is-rounded" href="{{ return_link }}">
+                <ion-icon name="return-down-back-outline"></ion-icon>
+                <span style="padding-left: 10px;">Return</span>
+            </a>
+        </div>
+
+        <div class="message is-medium">
+            <div class="message-header">
+                {% block message_header %}
+                {% endblock %}
+            </div>
+            <div class="message-body">
+                {% block form %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

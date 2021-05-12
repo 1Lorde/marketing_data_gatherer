@@ -1,0 +1,336 @@
+{% extends "message.html" %}
+
+{% block panel %}
+    <div class="level"></div>
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
+{% block message_header %}
+    <ion-icon size="large" name="add-circle-outline"></ion-icon>
+    <span class="pl-2">Add rule for Campaign</span>
+{% endblock %}
+
+{% block message_body %}
+    <form method="post">
+        <div class="columns">
+            <div class="column">
+                <div class="level-right">
+                    <div class="level-item">
+                        <span class="title is-5">If <span class="has-text-link">campaign</span> with name</span>
+                    </div>
+
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="field">
+                                <div class="control">
+                                    <input name="name" class="input" type="text" placeholder="name">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="level-right" id="hidden_div_1">
+                    <div class="level-item">
+                        <p class="title is-5">has</p>
+                    </div>
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="control">
+                                <div class="select">
+                                    <select name="param1">
+                                        <option disabled selected>field</option>
+                                        <option value="profit">profit</option>
+                                        <option value="clicks">clicks</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="control">
+                                <div class="select">
+                                    <select name="sign1">
+                                        <option disabled selected>operation</option>
+                                        <option value=">">></option>
+                                        <option value="<"><</option>
+                                        <option value="<="><=</option>
+                                        <option value=">=">>=</option>
+                                        <option value="==">==</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="field">
+                                <div class="control">
+                                    <input name="value1" class="input" type="number" step="0.01"
+                                           placeholder="value">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="level-right" id="hidden_div_2">
+                    <div class="level-item">
+                        <p class="title is-5">has</p>
+                    </div>
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="control">
+                                <div class="select">
+                                    <select name="param2">
+                                        <option disabled selected>field</option>
+                                        <option value="profit">profit</option>
+                                        <option value="clicks">clicks</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="control">
+                                <div class="select">
+                                    <select name="sign2">
+                                        <option disabled selected>operation</option>
+                                        <option value=">">></option>
+                                        <option value="<"><</option>
+                                        <option value="<="><=</option>
+                                        <option value=">=">>=</option>
+                                        <option value="==">==</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="field">
+                                <div class="control">
+                                    <input name="value2" class="input" type="number" step="0.01"
+                                           value="" placeholder="value">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="level-right" id="hidden_div_3">
+                    <div class="level-item">
+                        <p class="title is-5">has</p>
+                    </div>
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="control">
+                                <div class="select">
+                                    <select name="param3">
+                                        <option disabled selected>field</option>
+                                        <option value="profit">profit</option>
+                                        <option value="clicks">clicks</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="control">
+                                <div class="select">
+                                    <select name="sign3">
+                                        <option disabled selected>operation</option>
+                                        <option value=">">></option>
+                                        <option value="<"><</option>
+                                        <option value="<="><=</option>
+                                        <option value=">=">>=</option>
+                                        <option value="==">==</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="field">
+                                <div class="control">
+                                    <input name="value3" class="input" type="number" step="0.01"
+                                           placeholder="value">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="level-right" id="hidden_div_4">
+                    <div class="level-item">
+                        <p class="title is-5">has</p>
+                    </div>
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="control">
+                                <div class="select">
+                                    <select name="param4">
+                                        <option disabled selected>field</option>
+                                        <option value="profit">profit</option>
+                                        <option value="clicks">clicks</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="control">
+                                <div class="select">
+                                    <select name="sign4">
+                                        <option disabled selected>operation</option>
+                                        <option value=">">></option>
+                                        <option value="<"><</option>
+                                        <option value="<="><=</option>
+                                        <option value=">=">>=</option>
+                                        <option value="==">==</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="field">
+                                <div class="control">
+                                    <input name="value4" class="input" type="number" step="0.01"
+                                           placeholder="value">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="level-right">
+                    <div class="level-item">
+                        <span class="title is-5">for last</span>
+                    </div>
+
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="field">
+                                <div class="control">
+                                    <input name="days" class="input" type="number" step="1" min="1" max="30" placeholder="days">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="level-right">
+                    <div class="level-item">
+                        <p class="title is-5">then</p>
+                    </div>
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="control">
+                                <div class="select">
+                                    <select name="action">
+                                        <option disabled selected>action</option>
+                                        <option value="pause">pause</option>
+                                        <option value="resume">resume</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="level"></div>
+                <div class="level"></div>
+                <div class="field pl-6 ml-6">
+                    <label class="label">Select number of conditions</label>
+                    <div class="control">
+                        <div class="select">
+                            <select onchange="showDiv(this)" name="conditions">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr/>
+        <div class="field has-text-centered">
+            <div class="control">
+                <input class="button is-link" type="submit" value="Save"/>
+            </div>
+        </div>
+
+        <script>
+            function showDiv(element) {
+                switch (element.value) {
+                    case "1":
+                        document.getElementById('hidden_div_1').style.display = 'flex';
+                        document.getElementById('hidden_div_2').style.display = 'none';
+                        document.getElementById('hidden_div_3').style.display = 'none';
+                        document.getElementById('hidden_div_4').style.display = 'none';
+                        break;
+                    case "2":
+                        document.getElementById('hidden_div_1').style.display = 'flex';
+                        document.getElementById('hidden_div_2').style.display = 'flex';
+                        document.getElementById('hidden_div_3').style.display = 'none';
+                        document.getElementById('hidden_div_4').style.display = 'none';
+                        break;
+                    case "3":
+                        document.getElementById('hidden_div_1').style.display = 'flex';
+                        document.getElementById('hidden_div_2').style.display = 'flex';
+                        document.getElementById('hidden_div_3').style.display = 'flex';
+                        document.getElementById('hidden_div_4').style.display = 'none';
+                        break;
+                    case "4":
+                        document.getElementById('hidden_div_1').style.display = 'flex';
+                        document.getElementById('hidden_div_2').style.display = 'flex';
+                        document.getElementById('hidden_div_3').style.display = 'flex';
+                        document.getElementById('hidden_div_4').style.display = 'flex';
+                        break;
+                }
+            }
+
+        </script>
+    </form>
+{% endblock %}
+
+{% block side_menu %}
+    <div class="box">
+        <aside class="menu">
+            <div class="block">
+                <div class="level-left">
+                    <ion-icon class="has-text-link" size="large"
+                              name="cog-outline"></ion-icon>
+                    <span class="subtitle pl-2">Rules Control</span>
+                </div>
+                <hr/>
+
+                <p class="heading is-size-6 has-text-centered">Add rule</p>
+
+                <hr/>
+                <a href="{{ url_for('campaigns_rules') }}" class="navbar-item title is-6 m-0">
+                    <div class="level">
+                        <ion-icon size="large" name="list-outline"></ion-icon>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">Rules List</span>
+                    </div>
+                </a>
+            </div>
+        </aside>
+    </div>
+{% endblock %}
+
+

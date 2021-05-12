@@ -4,7 +4,8 @@ from datetime import datetime
 import requests
 from requests import HTTPError
 
-from models.models import Campaign, Source
+from models.models import Campaign, Source, DailyCampaign, CampaignRule, ExtractedCampaign
+from utils.rules_utils import get_comparison_operator, get_action
 
 
 class ApiUtils:
@@ -243,3 +244,68 @@ class ApiUtils:
             sources = self.get_sources_profit(sources)
 
         return sources
+
+    def get_campaign_start_url(self, campaign_id):
+        start_url = self.config['push_house_urls']['campaign_action']
+
+        api_key = self.config["api_keys"]["push_house"]
+        start_url = f'{start_url}{api_key}/1/{campaign_id}'
+
+        return start_url
+
+    def get_campaign_stop_url(self, campaign_id):
+        stop_url = self.config['push_house_urls']['campaign_action']
+
+        api_key = self.config["api_keys"]["push_house"]
+        stop_url = f'{stop_url}{api_key}/0/{campaign_id}'
+
+        return stop_url
+
+    def start_campaign(self, campaign_name):
+        try:
+            url = self.get_campaign_start_url(campaign_name)
+
+            response = requests.get(url)
+
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except HTTPError as http_err:
+            logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
+        except Exception as err:
+            logging.error(f'Other error occurred: {err}')  # Python 3.6
+        else:
+            logging.info('Start campaign ' + campaign_name)
+            print(response.json())
+
+    def stop_campaign(self, campaign_name):
+        try:
+            url = self.get_campaign_stop_url(campaign_name)
+
+            response = requests.get(url)
+
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except HTTPError as http_err:
+            logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
+        except Exception as err:
+            logging.error(f'Other error occurred: {err}')  # Python 3.6
+        else:
+            logging.info('Stop campaign ' + campaign_name)
+            print(response.json())
+
+    def check_rules(self):
+        campaigns = ExtractedCampaign.query.all()
+        for campaign in campaigns:
+            rules = CampaignRule.query.filter_by(campaign_name=campaign.name, days=campaign.last_days).all()
+            for rule in rules:
+                boolean_list = []
+                for num in range(int(rule.conditions)):
+                    num = num + 1
+                    campaign_value = getattr(campaign, getattr(rule, f'param{num}'))
+                    operator = get_comparison_operator(getattr(rule, f'sign{num}'))
+                    rule_value = getattr(rule, f'value{num}')
+                    boolean_list.append(operator(campaign_value, rule_value))
+
+                if all(boolean_list):
+                    action = get_action(getattr(rule, 'action'), self)
+                    action(campaign.name)

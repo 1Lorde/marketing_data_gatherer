@@ -1,0 +1,52 @@
+{% extends "message.html" %}
+
+{% block panel %}
+    <div class="level"></div>
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
+{% block message_header %}
+    <ion-icon size="large" name="cog-outline"></ion-icon>
+    <span class="pl-2">Rules List</span>
+{% endblock %}
+
+{% block message_body %}
+    <div class="table_div">
+        {{ table|safe }}
+    </div>
+{% endblock %}
+
+{% block side_menu %}
+    <div class="box">
+        <aside class="menu">
+            <div class="block">
+                <div class="level-left">
+                    <ion-icon class="has-text-link" size="large"
+                              name="cog-outline"></ion-icon>
+                    <span class="subtitle pl-2">Rules Control</span>
+                </div>
+                <hr/>
+
+                <p class="heading is-size-6 has-text-centered">Rules List</p>
+
+                <hr/>
+                <a href="#" class="navbar-item title is-6 m-0">
+                    <div class="level">
+                        <ion-icon size="large" name="add-circle-outline"></ion-icon>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">Add rule</span>
+                    </div>
+                </a>
+                <a href="#" class="navbar-item title is-6 m-0">
+                    <div class="level">
+                        <ion-icon size="large" name="trash-outline"></ion-icon>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">Delete rule</span>
+                    </div>
+                </a>
+            </div>
+        </aside>
+    </div>
+{% endblock %}
+
+

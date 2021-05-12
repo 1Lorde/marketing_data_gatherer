@@ -30,7 +30,6 @@ def get_last_fetched():
 
 
 def save_data_to_db(campaigns, sources):
-    db.session.flush()
     db.session.add_all(campaigns)
     db.session.add_all(sources)
     db.session.commit()

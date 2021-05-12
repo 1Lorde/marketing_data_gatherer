@@ -45,6 +45,16 @@
             text-overflow: ellipsis;
             word-wrap: break-word;
         }
+
+        #hidden_div_2 {
+            display: none;
+        }
+        #hidden_div_3 {
+            display: none;
+        }
+        #hidden_div_4 {
+            display: none;
+        }
     </style>
 </head>
 
@@ -76,6 +86,22 @@
                         <div class="level">
                             <ion-icon size="large" name="stats-chart-outline"></ion-icon>
                             <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="level-item">
+                    <a href="{{ url_for('campaigns_rules') }}" class="navbar-item title is-6">
+                        <div class="level">
+                            <ion-icon size="large" name="cog-outline"></ion-icon>
+                            <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns Rules</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="level-item">
+                    <a href="{{ url_for('sources_rules') }}" class="navbar-item title is-6">
+                        <div class="level">
+                            <ion-icon size="large" name="cog-outline"></ion-icon>
+                            <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds Rules</span>
                         </div>
                     </a>
                 </div>

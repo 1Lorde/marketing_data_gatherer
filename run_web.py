@@ -1,18 +1,18 @@
 import datetime
 import os
-import pathlib
-import sys
 from datetime import timedelta
 
 from flask import Flask, render_template, redirect, url_for, request
 from sqlalchemy import desc, and_
 from sqlalchemy_utils import database_exists
 
+from models.models import db, Campaign, Source, ExtractedCampaign, ExtractedSource, DailyCampaign, DailySource, \
+    CampaignRule
 from utils.api_utils import ApiUtils
+from utils.rules_utils import set_rules_field, save_rule_to_db
 from utils.utils import read_config, init_logger
-from models.models import db, Campaign, Source, ExtractedCampaign, ExtractedSource, DailyCampaign, DailySource
 from web.service import paginate_data, get_pagination_metadata_from_query, get_path_args, render_empty_campaigns, \
-    render_empty_sources
+    render_empty_sources, get_rule_fields
 from web.tables import CampaignTable, SourceTable, ExtractedCampaignTable, ExtractedSourceTable, FilteredSourceTable, \
     FilteredCampaignTable
 
@@ -30,6 +30,7 @@ if not database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
         db.create_all()
 
 api = None
+
 
 @app.context_processor
 def inject_dates():
@@ -247,6 +248,61 @@ def filtered_sources():
 @app.route('/')
 def root():
     return redirect(url_for('current_campaigns'))
+
+
+@app.route('/campaigns/rules', methods=['GET', 'POST'])
+def campaigns_rules():
+    rules = CampaignRule.query.all()
+
+    return render_template('campaigns_rules.html',
+                           rules=rules)
+
+
+@app.route('/sources/rules', methods=['GET', 'POST'])
+def sources_rules():
+    return render_template('sources_rules.html',
+                           table=None,
+                           pagination_data=None,
+                           start=None,
+                           end=None)
+
+
+@app.route('/campaigns/rules/add', methods=['GET', 'POST'])
+def campaigns_add_rule():
+    if request.method == 'POST':
+        rule_dict = get_rule_fields()
+        print(rule_dict)
+        rule = set_rules_field(rule_dict)
+        save_rule_to_db(rule)
+
+    return render_template('add_campaign_rule.html',
+                           form=None)
+
+
+@app.route('/campaigns/rules/delete/<rule_id>', methods=['GET', 'POST'])
+def campaigns_delete_rule(rule_id):
+    deleted_rule = CampaignRule.query.filter_by(rule_id=rule_id).first()
+    if request.method == 'POST':
+        db.session.delete(deleted_rule)
+        db.session.commit()
+        return redirect(url_for('campaigns_rules'))
+
+    return render_template('delete_confirm.html',
+                           rule_id=deleted_rule,
+                           message_title="Removing campaign rule",
+                           message="Are you really want to delete rule for campaign " + deleted_rule.campaign_name + "?")
+
+
+@app.route('/sources/rules/add', methods=['GET', 'POST'])
+def sources_add_rule():
+    if request.method == 'POST':
+        rule_dict = get_rule_fields()
+        print(rule_dict)
+        rule = set_rules_field(rule_dict)
+        save_rule_to_db(rule)
+
+    return render_template('add_campaign_rule.html',
+                           form=None)
 
 
 if __name__ == '__main__':

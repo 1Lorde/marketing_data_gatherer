@@ -51,3 +51,26 @@ def render_empty_sources(template):
     return render_template(template,
                            table='<p class="subtitle is-italic" style="padding:20px;">No sources for your request. Enter some parameters in rightside menu.</p>',
                            pagination_data=None)
+
+
+def get_rule_fields():
+    rule = {
+        'conditions': request.form.get('conditions'),
+        'name': request.form.get('name'),
+        'param1': request.form.get('param1'),
+        'sign1': request.form.get('sign1'),
+        'value1': request.form.get('value1'),
+        'param2': request.form.get('param2'),
+        'sign2': request.form.get('sign2'),
+        'value2': request.form.get('value2'),
+        'param3': request.form.get('param3'),
+        'sign3': request.form.get('sign3'),
+        'value3': request.form.get('value3'),
+        'param4': request.form.get('param4'),
+        'sign4': request.form.get('sign4'),
+        'value4': request.form.get('value4'),
+        'days': request.form.get('days'),
+        'action': request.form.get('action')
+    }
+
+    return rule
