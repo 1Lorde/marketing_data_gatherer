@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from models.models import db, Campaign, Source, ExtractedSource, ExtractedCampaign, DailyCampaign, DailySource
+from models.models import db, Campaign, Source, DailyCampaign, DailySource
 
 
 def set_fetched_at(campaigns, sources, fetched_at=None):
