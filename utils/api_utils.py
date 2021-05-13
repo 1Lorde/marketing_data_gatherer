@@ -4,7 +4,7 @@ from datetime import datetime
 import requests
 from requests import HTTPError
 
-from models.models import Campaign, Source, DailyCampaign, CampaignRule, ExtractedCampaign
+from models.models import Campaign, Source, DailyCampaign, CampaignRule
 from utils.rules_utils import get_comparison_operator, get_action
 
 
@@ -293,10 +293,12 @@ class ApiUtils:
             logging.info('Stop campaign ' + campaign_name)
             print(response.json())
 
-    def check_rules(self):
-        campaigns = ExtractedCampaign.query.all()
+    def check_campaign_rules(self):
+        campaigns = DailyCampaign.query.all()
+        now = datetime.now()
         for campaign in campaigns:
-            rules = CampaignRule.query.filter_by(campaign_name=campaign.name, days=campaign.last_days).all()
+            delta = now - campaign.fetched_at
+            rules = CampaignRule.query.filter_by(campaign_name=campaign.name, days=delta.days).all()
             for rule in rules:
                 boolean_list = []
                 for num in range(int(rule.conditions)):

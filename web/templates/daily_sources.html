@@ -1,6 +1,6 @@
 {% extends "message.html" %}
 
-{% set pagination_source='filtered_sources' %}
+{% set pagination_source='daily_sources' %}
 
 {% set previous_link=url_for(
                         pagination_source,
@@ -43,9 +43,9 @@
 {% block message_header %}
     <ion-icon size="large" name="filter-outline"></ion-icon>
     {% if start and end %}
-        <span class="pl-2">Filtered SourceIds ({{ start }} -- {{ end }})</span>
+        <span class="pl-2">SourceIds for {{ start }}</span>
     {% else %}
-        <span class="pl-2">Filtered SourceIds</span>
+        <span class="pl-2">SourceIds by Days</span>
     {% endif %}
 {% endblock %}
 
@@ -65,7 +65,7 @@
                     <span class="subtitle pl-2">SourceIds</span>
                 </div>
                 <hr/>
-                <p class="heading is-size-6 has-text-centered">Filter from Database</p>
+                <p class="heading is-size-6 has-text-centered">By Days</p>
 
                 <ul class="menu-list">
                     <li>
@@ -75,7 +75,7 @@
                                     <div class="control">
                                         <input class="input is-small" type="number"
                                                name="days_sources"
-                                               placeholder="Enter number of days">
+                                               placeholder="Enter number of days ago">
                                     </div>
                                     <div class="control">
                                         <input class="button is-info is-small" type="submit"
@@ -87,7 +87,7 @@
                     </li>
 
                     <li>
-                        <a href="{{ url_for('filtered_sources', start=yesterday, end=yesterday) }}"
+                        <a href="{{ url_for('daily_sources', start=yesterday, end=yesterday) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="today-outline"></ion-icon>
@@ -97,21 +97,21 @@
                     </li>
 
                     <li>
-                        <a href="{{ url_for('filtered_sources', start=three_days, end=yesterday) }}"
+                        <a href="{{ url_for('daily_sources', start=three_days, end=three_days) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="calendar-outline"></ion-icon>
-                                <span class="pl-2">Last 3 days</span>
+                                <span class="pl-2">3 days ago</span>
                             </div>
                         </a>
                     </li>
 
                     <li>
-                        <a href="{{ url_for('filtered_sources', start=week, end=yesterday) }}"
+                        <a href="{{ url_for('daily_sources', start=week, end=week) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="calendar-outline"></ion-icon>
-                                <span class="pl-2">Last 7 days</span>
+                                <span class="pl-2">7 days ago</span>
                             </div>
                         </a>
                     </li>
@@ -123,10 +123,10 @@
                         <span class="is-hidden-mobile" style="margin-left: 10px">Live SourceIds</span>
                     </div>
                 </a>
-                <a href="{{ url_for('extracted_sources') }}" class="navbar-item title is-6 m-0">
+                <a href="{{ url_for('sources_stats') }}" class="navbar-item title is-6 m-0">
                     <div class="level">
-                        <ion-icon size="large" name="cloud-download-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds Extractor</span>
+                        <ion-icon size="large" name="pie-chart-outline"></ion-icon>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds Stats</span>
                     </div>
                 </a>
             </div>

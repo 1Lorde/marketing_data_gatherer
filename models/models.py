@@ -56,24 +56,6 @@ class DailyCampaign(db.Model):
                f" fetched_at={self.fetched_at})"
 
 
-class ExtractedCampaign(db.Model):
-    campaign_id = Column(Integer, primary_key=True)
-    name = Column(String)
-    revenue = Column(Float)
-    cost = Column(Float)
-    profit = Column(Float)
-    last_days = Column(Integer)
-    fetched_at = Column(DateTime)
-
-    def __init__(self, name, revenue):
-        self.name = name
-        self.revenue = revenue
-
-    def __repr__(self):
-        return f"ExtractedCampaign (name={self.name}, revenue={self.revenue}, cost={self.cost}, profit={self.profit}," \
-               f" fetched_at={self.fetched_at})"
-
-
 class Source(db.Model):
     source_id = Column(Integer, primary_key=True)
     name = Column(String)

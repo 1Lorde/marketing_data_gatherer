@@ -55,16 +55,16 @@
                 <p class="heading is-size-6 has-text-centered">Live SourceIds</p>
 
                 <hr/>
-                <a href="{{ url_for('filtered_sources') }}" class="navbar-item title is-6 m-0">
+                <a href="{{ url_for('daily_sources') }}" class="navbar-item title is-6 m-0">
                     <div class="level">
                         <ion-icon size="large" name="filter-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds Filter</span>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds by Days</span>
                     </div>
                 </a>
-                <a href="{{ url_for('extracted_sources') }}" class="navbar-item title is-6 m-0">
+                <a href="{{ url_for('sources_stats') }}" class="navbar-item title is-6 m-0">
                     <div class="level">
-                        <ion-icon size="large" name="cloud-download-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds Extractor</span>
+                        <ion-icon size="large" name="pie-chart-outline"></ion-icon>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds Stats</span>
                     </div>
                 </a>
             </div>

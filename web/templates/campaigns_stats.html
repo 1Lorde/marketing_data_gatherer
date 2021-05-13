@@ -1,6 +1,6 @@
 {% extends "message.html" %}
 
-{% set pagination_source='extracted_sources' %}
+{% set pagination_source='campaigns_stats' %}
 
 {% set previous_link=url_for(
                         pagination_source,
@@ -41,11 +41,11 @@
 {% endblock %}
 
 {% block message_header %}
-    <ion-icon size="large" name="cloud-download-outline"></ion-icon>
-    {% if request.args.get('days') %}
-        <span class="pl-2">Extracted SourceIds for last {{ request.args.get('days') }} days</span>
+    <ion-icon size="large" name="pie-chart-outline"></ion-icon>
+    {% if request.args.get('start') and request.args.get('end') %}
+        <span class="pl-2">Campaigns Stats for ({{ start }} -- {{ end }})</span>
     {% else %}
-        <span class="pl-2">Extracted SourceIds</span>
+        <span class="pl-2">Campaigns Stats</span>
     {% endif %}
 {% endblock %}
 
@@ -60,13 +60,13 @@
         <aside class="menu">
             <div class="block">
                 <div class="level-left">
-                    <ion-icon class="has-text-info" size="large"
-                              name="stats-chart-outline"></ion-icon>
-                    <span class="subtitle pl-2">SourceIds</span>
+                    <ion-icon class="has-text-link" size="large"
+                              name="bar-chart-outline"></ion-icon>
+                    <span class="subtitle pl-2">Campaigns</span>
                 </div>
                 <hr/>
 
-                <p class="heading is-size-6 has-text-centered">Extract from API</p>
+                <p class="heading is-size-6 has-text-centered">Campaigns Stats</p>
                 <ul class="menu-list">
                     <li>
                         <div class="block p-3">
@@ -74,13 +74,13 @@
                                 <div class="field has-addons">
                                     <div class="control">
                                         <input class="input is-small" type="number"
-                                               name="days_sources"
+                                               name="days_campaigns"
                                                max="30"
                                                placeholder="Enter number of days">
                                     </div>
                                     <div class="control">
                                         <input class="button is-link is-small" type="submit"
-                                               value="Extract">
+                                               value="Get stats">
                                     </div>
                                 </div>
                             </form>
@@ -88,7 +88,7 @@
                     </li>
 
                     <li>
-                        <a href="{{ url_for('extracted_sources', days=1) }}"
+                        <a href="{{ url_for('campaigns_stats', start=yesterday, end=yesterday) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="today-outline"></ion-icon>
@@ -98,7 +98,7 @@
                     </li>
 
                     <li>
-                        <a href="{{ url_for('extracted_sources', days=3) }}"
+                        <a href="{{ url_for('campaigns_stats', start=three_days, end=yesterday) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="calendar-outline"></ion-icon>
@@ -108,7 +108,7 @@
                     </li>
 
                     <li>
-                        <a href="{{ url_for('extracted_sources', days=7) }}"
+                        <a href="{{ url_for('campaigns_stats', start=week, end=yesterday) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="calendar-outline"></ion-icon>
@@ -117,17 +117,18 @@
                         </a>
                     </li>
                 </ul>
+
                 <hr/>
-                <a href="{{ url_for('current_sources') }}" class="navbar-item title is-6 m-0">
+                <a href="{{ url_for('current_campaigns') }}" class="navbar-item title is-6 m-0">
                     <div class="level">
                         <ion-icon size="large" name="pulse-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">Live SourceIds</span>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">Live Campaigns</span>
                     </div>
                 </a>
-                <a href="{{ url_for('filtered_sources') }}" class="navbar-item title is-6 m-0">
+                <a href="{{ url_for('daily_campaigns') }}" class="navbar-item title is-6 m-0">
                     <div class="level">
                         <ion-icon size="large" name="filter-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds Filter</span>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns By Days</span>
                     </div>
                 </a>
             </div>

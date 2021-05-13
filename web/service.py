@@ -14,9 +14,8 @@ def get_path_args():
     page = request.args.get('page', 1, type=int)
     start = request.args.get('start')
     end = request.args.get('end')
-    days = request.args.get('days')
 
-    return page, start, end, days
+    return page, start, end
 
 
 def get_pagination_metadata_from_query(page, data_query):

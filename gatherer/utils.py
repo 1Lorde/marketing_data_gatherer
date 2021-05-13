@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from models.models import db, Campaign, Source, ExtractedSource, ExtractedCampaign
+from models.models import db, Campaign, Source, ExtractedSource, ExtractedCampaign, DailyCampaign, DailySource
 
 
 def set_fetched_at(campaigns, sources, fetched_at=None):
@@ -41,9 +41,9 @@ def remove_data_fetched_at(fetched_at):
     db.session.commit()
 
 
-def remove_extracted_data():
-    ExtractedCampaign.query.delete()
-    ExtractedSource.query.delete()
+def remove_daily_data():
+    DailyCampaign.query.delete()
+    DailySource.query.delete()
     db.session.commit()
 
 

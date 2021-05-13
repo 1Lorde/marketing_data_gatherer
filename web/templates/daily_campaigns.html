@@ -1,6 +1,6 @@
 {% extends "message.html" %}
 
-{% set pagination_source='extracted_campaigns' %}
+{% set pagination_source='daily_campaigns' %}
 
 {% set previous_link=url_for(
                         pagination_source,
@@ -41,11 +41,11 @@
 {% endblock %}
 
 {% block message_header %}
-    <ion-icon size="large" name="cloud-download-outline"></ion-icon>
-    {% if request.args.get('days') %}
-        <span class="pl-2">Extracted Campaigns for last {{ request.args.get('days') }} days</span>
+    <ion-icon size="large" name="filter-outline"></ion-icon>
+    {% if start and end %}
+        <span class="pl-2">Campaigns for {{ start }}</span>
     {% else %}
-        <span class="pl-2">Extracted Campaigns</span>
+        <span class="pl-2">Campaigns by Days</span>
     {% endif %}
 {% endblock %}
 
@@ -66,7 +66,7 @@
                 </div>
                 <hr/>
 
-                <p class="heading is-size-6 has-text-centered">Extract from API</p>
+                <p class="heading is-size-6 has-text-centered">By Days</p>
                 <ul class="menu-list">
                     <li>
                         <div class="block p-3">
@@ -75,12 +75,11 @@
                                     <div class="control">
                                         <input class="input is-small" type="number"
                                                name="days_campaigns"
-                                               max="30"
-                                               placeholder="Enter number of days">
+                                               placeholder="Enter number of days ago">
                                     </div>
                                     <div class="control">
-                                        <input class="button is-link is-small" type="submit"
-                                               value="Extract">
+                                        <input class="button is-info is-small" type="submit"
+                                               value="Filter">
                                     </div>
                                 </div>
                             </form>
@@ -88,7 +87,7 @@
                     </li>
 
                     <li>
-                        <a href="{{ url_for('extracted_campaigns', days=1) }}"
+                        <a href="{{ url_for('daily_campaigns', start=yesterday, end=yesterday) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="today-outline"></ion-icon>
@@ -98,21 +97,21 @@
                     </li>
 
                     <li>
-                        <a href="{{ url_for('extracted_campaigns', days=3) }}"
+                        <a href="{{ url_for('daily_campaigns', start=three_days, end=three_days) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="calendar-outline"></ion-icon>
-                                <span class="pl-2">Last 3 days</span>
+                                <span class="pl-2">3 days ago</span>
                             </div>
                         </a>
                     </li>
 
                     <li>
-                        <a href="{{ url_for('extracted_campaigns', days=7) }}"
+                        <a href="{{ url_for('daily_campaigns', start=week, end=week) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="calendar-outline"></ion-icon>
-                                <span class="pl-2">Last 7 days</span>
+                                <span class="pl-2">7 days ago</span>
                             </div>
                         </a>
                     </li>
@@ -125,10 +124,10 @@
                         <span class="is-hidden-mobile" style="margin-left: 10px">Live Campaigns</span>
                     </div>
                 </a>
-                <a href="{{ url_for('filtered_campaigns') }}" class="navbar-item title is-6 m-0">
+                <a href="{{ url_for('campaigns_stats') }}" class="navbar-item title is-6 m-0">
                     <div class="level">
-                        <ion-icon size="large" name="filter-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns Filter</span>
+                        <ion-icon size="large" name="pie-chart-outline"></ion-icon>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns Stats</span>
                     </div>
                 </a>
             </div>

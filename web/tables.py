@@ -14,7 +14,7 @@ class CampaignTable(Table):
         return {'style': 'position: sticky; top: 0; '}
 
 
-class FilteredCampaignTable(Table):
+class DailyCampaignTable(Table):
     classes = ['table', 'is-striped', 'is-hoverable', 'is-fullwidth', 'is-bordered']
     fetched_at = DatetimeCol("Date", datetime_format="dd-MM-yy")
     name = Col("Campaign name")
@@ -26,7 +26,7 @@ class FilteredCampaignTable(Table):
         return {'style': 'position: sticky; top: 0; '}
 
 
-class ExtractedCampaignTable(Table):
+class CampaignStatsTable(Table):
     classes = ['table', 'is-striped', 'is-hoverable', 'is-fullwidth', 'is-bordered']
     name = Col("Campaign name")
     revenue = Col("Revenue")
@@ -51,7 +51,7 @@ class SourceTable(Table):
         return {'style': 'position: sticky; top: 0; '}
 
 
-class FilteredSourceTable(Table):
+class DailySourceTable(Table):
     classes = ['table', 'is-striped', 'is-hoverable', 'is-fullwidth', 'is-bordered']
     fetched_at = DatetimeCol("Date", datetime_format="dd-MM-yy")
     name = Col("Source name")
@@ -64,7 +64,7 @@ class FilteredSourceTable(Table):
         return {'style': 'position: sticky; top: 0; '}
 
 
-class ExtractedSourceTable(Table):
+class SourceStatsTable(Table):
     classes = ['table', 'is-striped', 'is-hoverable', 'is-fullwidth', 'is-bordered']
     name = Col("Source name")
     campaign_name = Col("Campaign name")

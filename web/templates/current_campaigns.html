@@ -65,16 +65,16 @@
                 <p class="heading is-size-6 has-text-centered">Live Campaigns</p>
 
                 <hr/>
-                <a href="{{ url_for('filtered_campaigns') }}" class="navbar-item title is-6 m-0">
+                <a href="{{ url_for('daily_campaigns', start=yesterday, end=yesterday) }}" class="navbar-item title is-6 m-0">
                     <div class="level">
                         <ion-icon size="large" name="filter-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns Filter</span>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns by Days</span>
                     </div>
                 </a>
-                <a href="{{ url_for('extracted_campaigns') }}" class="navbar-item title is-6 m-0">
+                <a href="{{ url_for('campaigns_stats') }}" class="navbar-item title is-6 m-0">
                     <div class="level">
-                        <ion-icon size="large" name="cloud-download-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns Extractor</span>
+                        <ion-icon size="large" name="pie-chart-outline"></ion-icon>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns Stats</span>
                     </div>
                 </a>
             </div>
