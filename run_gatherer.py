@@ -32,6 +32,7 @@ def live_job():
         print(sources)
 
         api.check_campaign_rules()
+        api.check_source_rules()
 
 
 def daily_job():

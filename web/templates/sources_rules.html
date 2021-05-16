@@ -8,13 +8,54 @@
 {% endblock %}
 
 {% block message_header %}
-    <ion-icon size="large" name="cog-outline"></ion-icon>
-    <span class="pl-2">Rules List</span>
+    <ion-icon size="large" name="list-outline"></ion-icon>
+    <span class="pl-2">SourceIds Rules List</span>
 {% endblock %}
 
 {% block message_body %}
-    <div class="table_div">
-        {{ table|safe }}
+    <div class="container">
+        {% if rules %}
+            <ol>
+                {% for rule in rules %}
+                    <div class="block subtitle is-5">
+                        <li>
+                            <span>If
+                                <span class="has-text-info">source id</span>
+                                with name
+                                <span class="tag is-medium is-info is-rounded"><strong>{{ rule.source_name }}</strong></span>
+                                for campaign <strong><span class="has-text-link">{{ rule.campaign_name }}</span></strong>
+                                has</span>
+
+                            {% for i in range(rule.conditions) %}
+                                <span class="tag is-primary is-light is-medium is-rounded">
+                                    <strong>{{ rule['param'+(i + 1)|string] }} {{ rule['sign'+(i + 1)|string] }} {{ rule['value'+(i + 1)|string] }}</strong>
+                                </span>
+                                {% if i != rule.conditions - 1 %}
+                                    <span>and</span>
+                                {% endif %}
+                            {% endfor %}
+
+                            <span>for last <strong>{{ rule.days }}</strong> days,</span>
+
+                            <span>
+                                then
+                                <strong>
+                                    <span class="tag is-medium is-rounded is-white">{{ rule.action }}</span>
+                                </strong>.
+                            </span>
+
+                            <a class="button is-small is-danger is-pulled-right"
+                               href="{{ url_for('sources_delete_rule', rule_id=rule.rule_id) }}">
+                                <ion-icon name="trash-outline"></ion-icon>
+                            </a>
+                        </li>
+
+                    </div>
+                {% endfor %}
+            </ol>
+            {% else %}
+            <p>No rules here</p>
+        {% endif %}
     </div>
 {% endblock %}
 
@@ -25,23 +66,17 @@
                 <div class="level-left">
                     <ion-icon class="has-text-link" size="large"
                               name="cog-outline"></ion-icon>
-                    <span class="subtitle pl-2">Rules Control</span>
+                    <span class="subtitle pl-2">SourceIds Rules</span>
                 </div>
                 <hr/>
 
                 <p class="heading is-size-6 has-text-centered">Rules List</p>
 
                 <hr/>
-                <a href="#" class="navbar-item title is-6 m-0">
+                <a href="{{ url_for('sources_add_rule') }}" class="navbar-item title is-6 m-0">
                     <div class="level">
                         <ion-icon size="large" name="add-circle-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">Add rule</span>
-                    </div>
-                </a>
-                <a href="#" class="navbar-item title is-6 m-0">
-                    <div class="level">
-                        <ion-icon size="large" name="trash-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">Delete rule</span>
+                        <span class="is-hidden-mobile" style="margin-left: 10px">Add rule for SourceId</span>
                     </div>
                 </a>
             </div>

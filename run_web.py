@@ -7,9 +7,9 @@ from sqlalchemy import and_
 from sqlalchemy_utils import database_exists
 
 from models.models import db, Campaign, Source, DailyCampaign, DailySource, \
-    CampaignRule
+    CampaignRule, SourceRule
 from utils.api_utils import ApiUtils
-from utils.rules_utils import set_rules_field, save_rule_to_db
+from utils.rules_utils import set_campaign_rule_fields, save_rule_to_db, set_source_rule_fields
 from utils.utils import read_config, init_logger
 from web.service import paginate_data, get_pagination_metadata_from_query, get_path_args, render_empty_campaigns, \
     render_empty_sources, get_rule_fields
@@ -329,11 +329,9 @@ def campaigns_rules():
 
 @app.route('/sources/rules', methods=['GET', 'POST'])
 def sources_rules():
+    rules = SourceRule.query.all()
     return render_template('sources_rules.html',
-                           table=None,
-                           pagination_data=None,
-                           start=None,
-                           end=None)
+                           rules=rules)
 
 
 @app.route('/campaigns/rules/add', methods=['GET', 'POST'])
@@ -341,7 +339,7 @@ def campaigns_add_rule():
     if request.method == 'POST':
         rule_dict = get_rule_fields()
         print(rule_dict)
-        rule = set_rules_field(rule_dict)
+        rule = set_campaign_rule_fields(rule_dict)
         save_rule_to_db(rule)
         return redirect(url_for('campaigns_rules'))
 
@@ -368,11 +366,26 @@ def sources_add_rule():
     if request.method == 'POST':
         rule_dict = get_rule_fields()
         print(rule_dict)
-        rule = set_rules_field(rule_dict)
+        rule = set_source_rule_fields(rule_dict)
         save_rule_to_db(rule)
+        return redirect(url_for('sources_rules'))
 
-    return render_template('add_campaign_rule.html',
+    return render_template('add_source_rule.html',
                            form=None)
+
+
+@app.route('/sources/rules/delete/<rule_id>', methods=['GET', 'POST'])
+def sources_delete_rule(rule_id):
+    deleted_rule = SourceRule.query.filter_by(rule_id=rule_id).first()
+    if request.method == 'POST':
+        db.session.delete(deleted_rule)
+        db.session.commit()
+        return redirect(url_for('sources_rules'))
+
+    return render_template('delete_confirm.html',
+                           rule_id=deleted_rule,
+                           message_title="Removing SourceId rule",
+                           message="Are you really want to delete rule for SourceId " + deleted_rule.source_name + "?")
 
 
 if __name__ == '__main__':

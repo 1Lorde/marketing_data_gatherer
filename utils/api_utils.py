@@ -4,8 +4,8 @@ from datetime import datetime
 import requests
 from requests import HTTPError
 
-from models.models import Campaign, Source, DailyCampaign, CampaignRule
-from utils.rules_utils import get_comparison_operator, get_action
+from models.models import Campaign, Source, DailyCampaign, CampaignRule, DailySource, SourceRule
+from utils.rules_utils import get_comparison_operator, get_campaign_action, get_source_action
 
 
 class ApiUtils:
@@ -245,19 +245,19 @@ class ApiUtils:
 
         return sources
 
-    def get_campaign_start_url(self, campaign_id):
+    def get_campaign_start_url(self, campaign_name):
         start_url = self.config['push_house_urls']['campaign_action']
 
         api_key = self.config["api_keys"]["push_house"]
-        start_url = f'{start_url}{api_key}/1/{campaign_id}'
+        start_url = f'{start_url}{api_key}/1/{campaign_name}'
 
         return start_url
 
-    def get_campaign_stop_url(self, campaign_id):
+    def get_campaign_stop_url(self, campaign_name):
         stop_url = self.config['push_house_urls']['campaign_action']
 
         api_key = self.config["api_keys"]["push_house"]
-        stop_url = f'{stop_url}{api_key}/0/{campaign_id}'
+        stop_url = f'{stop_url}{api_key}/0/{campaign_name}'
 
         return stop_url
 
@@ -293,6 +293,78 @@ class ApiUtils:
             logging.info('Stop campaign ' + campaign_name)
             print(response.json())
 
+    def get_source_whitelist_url(self, campaign_name):
+        white_url = self.config['push_house_urls']['source_action']
+
+        api_key = self.config["api_keys"]["push_house"]
+        white_url = f'{white_url}{api_key}/white/{campaign_name}'
+
+        return white_url
+
+    def get_source_blacklist_url(self, campaign_name):
+        black_url = self.config['push_house_urls']['source_action']
+
+        api_key = self.config["api_keys"]["push_house"]
+        black_url = f'{black_url}{api_key}/black/{campaign_name}'
+
+        return black_url
+
+    def get_source_clear_list_url(self, campaign_name):
+        clear_url = self.config['push_house_urls']['source_action']
+
+        api_key = self.config["api_keys"]["push_house"]
+        clear_url = f'{clear_url}{api_key}/clear/{campaign_name}'
+
+        return clear_url
+
+    def add_source_to_whitelist(self, campaign_name, source_name):
+        try:
+            url = self.get_source_whitelist_url(campaign_name)
+            data = {'list': source_name}
+            response = requests.post(url, data=data)
+
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except HTTPError as http_err:
+            logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
+        except Exception as err:
+            logging.error(f'Other error occurred: {err}')  # Python 3.6
+        else:
+            logging.info(f'Source {source_name} added to whitelist.')
+            print(response.json())
+
+    def add_source_to_blacklist(self, campaign_name, source_name):
+        try:
+            url = self.get_source_blacklist_url(campaign_name)
+            data = {'list': source_name}
+            response = requests.post(url, data=data)
+
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except HTTPError as http_err:
+            logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
+        except Exception as err:
+            logging.error(f'Other error occurred: {err}')  # Python 3.6
+        else:
+            logging.info(f'Source {source_name} added to blacklist.')
+            print(response.json())
+
+    def clear_source_lists(self, campaign_name):
+        try:
+            url = self.get_source_clear_list_url(campaign_name)
+
+            response = requests.post(url)
+
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except HTTPError as http_err:
+            logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
+        except Exception as err:
+            logging.error(f'Other error occurred: {err}')  # Python 3.6
+        else:
+            logging.info(f'Cleared all lists.')
+            print(response.json())
+
     def check_campaign_rules(self):
         campaigns = DailyCampaign.query.all()
         now = datetime.now()
@@ -309,5 +381,25 @@ class ApiUtils:
                     boolean_list.append(operator(campaign_value, rule_value))
 
                 if all(boolean_list):
-                    action = get_action(getattr(rule, 'action'), self)
+                    action = get_campaign_action(getattr(rule, 'action'), self)
                     action(campaign.name)
+
+    def check_source_rules(self):
+        sources = DailySource.query.all()
+        now = datetime.now()
+        for source in sources:
+            delta = now - source.fetched_at
+            rules = SourceRule.query.filter_by(campaign_name=source.campaign_name, source_name=source.name,
+                                               days=delta.days).all()
+            for rule in rules:
+                boolean_list = []
+                for num in range(int(rule.conditions)):
+                    num = num + 1
+                    source_value = getattr(source, getattr(rule, f'param{num}'))
+                    operator = get_comparison_operator(getattr(rule, f'sign{num}'))
+                    rule_value = getattr(rule, f'value{num}')
+                    boolean_list.append(operator(source_value, rule_value))
+
+                if all(boolean_list):
+                    action = get_source_action(getattr(rule, 'action'), self)
+                    action(source.campaign_name, source.name)

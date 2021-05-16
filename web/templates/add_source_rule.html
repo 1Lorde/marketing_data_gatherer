@@ -9,7 +9,7 @@
 
 {% block message_header %}
     <ion-icon size="large" name="add-circle-outline"></ion-icon>
-    <span class="pl-2">Add rule for Campaign</span>
+    <span class="pl-2">Add rule for SourceId</span>
 {% endblock %}
 
 {% block message_body %}
@@ -18,7 +18,7 @@
             <div class="column">
                 <div class="level-right">
                     <div class="level-item">
-                        <span class="title is-5">If <span class="has-text-link">campaign</span> with name</span>
+                        <span class="title is-5">If <span class="has-text-info">source id</span> with name</span>
                     </div>
 
                     <div class="level-item p-3">
@@ -26,6 +26,22 @@
                             <div class="field">
                                 <div class="control">
                                     <input name="name" class="input" type="text" placeholder="name" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="level-right">
+                    <div class="level-item">
+                        <span class="title is-5">for campaign with</span>
+                    </div>
+
+                    <div class="level-item p-3">
+                        <div class="field">
+                            <div class="field">
+                                <div class="control">
+                                    <input name="campaign_name" class="input" type="text" placeholder="name" required>
                                 </div>
                             </div>
                         </div>
@@ -208,7 +224,7 @@
                     </div>
                 </div>
 
-                 <div class="level-right">
+                <div class="level-right">
                     <div class="level-item">
                         <span class="title is-5">for last</span>
                     </div>
@@ -217,7 +233,8 @@
                         <div class="field">
                             <div class="field">
                                 <div class="control">
-                                    <input name="days" class="input" type="number" step="1" min="1" max="30" placeholder="days" required>
+                                    <input name="days" class="input" type="number" step="1" min="1" max="30"
+                                           placeholder="days" required>
                                 </div>
                             </div>
                         </div>
@@ -234,7 +251,6 @@
                                 <div class="select">
                                     <select name="action">
                                         <option value="pause">pause</option>
-                                        <option value="resume">resume</option>
                                     </select>
                                 </div>
                             </div>
@@ -317,7 +333,7 @@
                 <p class="heading is-size-6 has-text-centered">Add rule</p>
 
                 <hr/>
-                <a href="{{ url_for('campaigns_rules') }}" class="navbar-item title is-6 m-0">
+                <a href="{{ url_for('sources_rules') }}" class="navbar-item title is-6 m-0">
                     <div class="level">
                         <ion-icon size="large" name="list-outline"></ion-icon>
                         <span class="is-hidden-mobile" style="margin-left: 10px">Rules List</span>
@@ -327,5 +343,3 @@
         </aside>
     </div>
 {% endblock %}
-
-

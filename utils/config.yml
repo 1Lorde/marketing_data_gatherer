@@ -9,7 +9,7 @@ binom_urls:
 push_house_urls:
   stats: https://push.house/api/statistics/
   campaign_action: https://push.house/api/active/
-
+  source_action: https://push.house/api/lists/
 
 logging:
   format: '%(asctime)s [%(levelname)s] (%(threadName)s, IN %(funcName)s): %(message)s.'

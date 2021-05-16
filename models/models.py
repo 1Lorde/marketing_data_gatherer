@@ -150,3 +150,27 @@ class CampaignRule(db.Model):
 
     def __repr__(self):
         return f"CampaignRule (id={self.rule_id})"
+
+
+class SourceRule(db.Model):
+    rule_id = Column(Integer, primary_key=True)
+    conditions = Column(Integer)
+    source_name = Column(String)
+    campaign_name = Column(String)
+    param1 = Column(String)
+    sign1 = Column(String)
+    value1 = Column(Float)
+    param2 = Column(String)
+    sign2 = Column(String)
+    value2 = Column(Float)
+    param3 = Column(String)
+    sign3 = Column(String)
+    value3 = Column(Float)
+    param4 = Column(String)
+    sign4 = Column(String)
+    value4 = Column(Float)
+    days = Column(Integer)
+    action = Column(String)
+
+    def __repr__(self):
+        return f"SourceRule (id={self.rule_id})"
