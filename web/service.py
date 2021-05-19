@@ -14,8 +14,9 @@ def get_path_args():
     page = request.args.get('page', 1, type=int)
     start = request.args.get('start')
     end = request.args.get('end')
+    ts = request.args.get('ts', 'push_house', type=str)
 
-    return page, start, end
+    return page, start, end, ts
 
 
 def get_pagination_metadata_from_query(page, data_query):
@@ -40,16 +41,18 @@ def paginate_data(metadata, query):
     return query.items
 
 
-def render_empty_campaigns(template):
+def render_empty_campaigns(template, ts):
     return render_template(template,
                            table='<p class="subtitle is-italic" style="padding:20px;">No campaigns for your request. Enter some parameters in rightside menu.</p>',
-                           pagination_data=None)
+                           pagination_data=None,
+                           ts=ts)
 
 
-def render_empty_sources(template):
+def render_empty_sources(template, ts):
     return render_template(template,
                            table='<p class="subtitle is-italic" style="padding:20px;">No sources for your request. Enter some parameters in rightside menu.</p>',
-                           pagination_data=None)
+                           pagination_data=None,
+                           ts=ts)
 
 
 def get_rule_fields():

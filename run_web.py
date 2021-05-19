@@ -43,7 +43,7 @@ def inject_dates():
 
 @app.route('/campaigns/current', methods=['GET', 'POST'])
 def current_campaigns():
-    page_arg, start_arg, end_arg = get_path_args()
+    page_arg, start_arg, end_arg, ts_arg = get_path_args()
     campaign_query = Campaign.query.order_by(Campaign.name)
 
     today = str(datetime.datetime.today()).split(' ')[0]
@@ -54,11 +54,18 @@ def current_campaigns():
         and_(Campaign.fetched_at >= today_start,
              Campaign.fetched_at <= today_end))
 
+    if ts_arg == 'push_house':
+        ph_id = config['traffic_source_ids']['push_house']
+        campaign_query = campaign_query.filter_by(traffic_source=ph_id)
+    else:
+        ungads_id = config['traffic_source_ids']['ungads']
+        campaign_query = campaign_query.filter_by(traffic_source=ungads_id)
+
     pagination_metadata = get_pagination_metadata_from_query(page_arg, campaign_query)
     campaigns_list = paginate_data(pagination_metadata, campaign_query)
 
     if len(campaigns_list) == 0:
-        return render_empty_campaigns('current_campaigns.html')
+        return render_empty_campaigns('current_campaigns.html', ts_arg)
 
     table = CampaignTable(campaigns_list)
 
@@ -66,11 +73,14 @@ def current_campaigns():
                            table=table,
                            pagination_data=pagination_metadata,
                            start=start_arg,
-                           end=end_arg)
+                           end=end_arg,
+                           ts=ts_arg)
 
 
 @app.route('/campaigns/stats', methods=['GET', 'POST'])
 def campaigns_stats():
+    page_arg, start_arg, end_arg, ts_arg = get_path_args()
+
     if request.method == 'POST':
         try:
             days_campaigns = request.form['days_campaigns'] if request.form['days_campaigns'] else None
@@ -78,11 +88,9 @@ def campaigns_stats():
             if days_campaigns:
                 start = datetime.date.today() - timedelta(int(days_campaigns))
                 end = datetime.date.today() - timedelta(1)
-                return redirect(url_for('campaigns_stats', start=start, end=end))
+                return redirect(url_for('campaigns_stats', start=start, end=end, ts=ts_arg))
         except KeyError:
             pass
-
-    page_arg, start_arg, end_arg = get_path_args()
 
     yesterday = datetime.datetime.now() - timedelta(days=1)
     campaign_query = DailyCampaign.query.order_by(DailyCampaign.name)
@@ -98,6 +106,13 @@ def campaigns_stats():
             and_(DailyCampaign.fetched_at >= yesterday - timedelta(1),
                  DailyCampaign.fetched_at <= yesterday))
 
+    if ts_arg == 'push_house':
+        ph_id = config['traffic_source_ids']['push_house']
+        campaign_query = campaign_query.filter_by(traffic_source=ph_id)
+    else:
+        ungads_id = config['traffic_source_ids']['ungads']
+        campaign_query = campaign_query.filter_by(traffic_source=ungads_id)
+
     campaigns_list = campaign_query.all()
 
     unique_campaigns_names = set()
@@ -105,12 +120,13 @@ def campaigns_stats():
 
     campaigns_stats_list = []
     for name in unique_campaigns_names:
-        campaign_stat = Campaign(name, 0)
+        campaign_stat = Campaign(name, 0, 0)
         campaign_stat.cost = 0
         campaign_stat.profit = 0
 
         for campaign in campaigns_list:
             if campaign.name == name:
+                campaign_stat.traffic_source = campaign.traffic_source
                 campaign_stat.revenue += campaign.revenue
                 campaign_stat.cost += campaign.cost
                 campaign_stat.profit += campaign.profit
@@ -118,7 +134,7 @@ def campaigns_stats():
         campaigns_stats_list.append(campaign_stat)
 
     if len(campaigns_stats_list) == 0:
-        return render_empty_campaigns('campaigns_stats.html')
+        return render_empty_campaigns('campaigns_stats.html', ts_arg)
 
     campaigns_stats_list.sort(key=lambda x: x.name, reverse=True)
 
@@ -128,11 +144,14 @@ def campaigns_stats():
                            table=table,
                            pagination_data=None,
                            start=start_arg,
-                           end=end_arg)
+                           end=end_arg,
+                           ts=ts_arg)
 
 
 @app.route('/campaigns/daily', methods=['GET', 'POST'])
 def daily_campaigns():
+    page_arg, start_arg, end_arg, ts_arg = get_path_args()
+
     if request.method == 'POST':
         try:
             days_campaigns = request.form['days_campaigns'] if request.form['days_campaigns'] else None
@@ -140,11 +159,9 @@ def daily_campaigns():
             if days_campaigns:
                 start = datetime.date.today() - timedelta(int(days_campaigns))
                 end = start
-                return redirect(url_for('daily_campaigns', start=start, end=end))
+                return redirect(url_for('daily_campaigns', start=start, end=end, ts=ts_arg))
         except KeyError:
             pass
-
-    page_arg, start_arg, end_arg = get_path_args()
 
     campaign_query = DailyCampaign.query.order_by(DailyCampaign.name)
 
@@ -161,11 +178,18 @@ def daily_campaigns():
             and_(DailyCampaign.fetched_at >= yesterday - timedelta(1),
                  DailyCampaign.fetched_at <= yesterday))
 
+    if ts_arg == 'push_house':
+        ph_id = config['traffic_source_ids']['push_house']
+        campaign_query = campaign_query.filter_by(traffic_source=ph_id)
+    else:
+        ungads_id = config['traffic_source_ids']['ungads']
+        campaign_query = campaign_query.filter_by(traffic_source=ungads_id)
+
     pagination_metadata = get_pagination_metadata_from_query(page_arg, campaign_query)
     campaigns_list = paginate_data(pagination_metadata, campaign_query)
 
     if len(campaigns_list) == 0:
-        return render_empty_campaigns('daily_campaigns.html')
+        return render_empty_campaigns('daily_campaigns.html', ts_arg)
 
     table = DailyCampaignTable(campaigns_list)
 
@@ -173,12 +197,13 @@ def daily_campaigns():
                            table=table,
                            pagination_data=pagination_metadata,
                            start=start_arg,
-                           end=end_arg)
+                           end=end_arg,
+                           ts=ts_arg)
 
 
 @app.route('/sources/current', methods=['GET', 'POST'])
 def current_sources():
-    page_arg, start_arg, end_arg = get_path_args()
+    page_arg, start_arg, end_arg, ts_arg = get_path_args()
     source_query = Source.query.order_by(Source.campaign_name)
 
     today = str(datetime.datetime.today()).split(' ')[0]
@@ -189,11 +214,18 @@ def current_sources():
         and_(Source.fetched_at >= today_start,
              Source.fetched_at <= today_end))
 
+    if ts_arg == 'push_house':
+        ph_id = config['traffic_source_ids']['push_house']
+        source_query = source_query.filter_by(traffic_source=ph_id)
+    else:
+        ungads_id = config['traffic_source_ids']['ungads']
+        source_query = source_query.filter_by(traffic_source=ungads_id)
+
     pagination_metadata = get_pagination_metadata_from_query(page_arg, source_query)
     source_list = paginate_data(pagination_metadata, source_query)
 
     if len(source_list) == 0:
-        return render_empty_sources('current_sources.html')
+        return render_empty_sources('current_sources.html', ts_arg)
 
     table = SourceTable(source_list)
 
@@ -201,11 +233,14 @@ def current_sources():
                            table=table,
                            pagination_data=pagination_metadata,
                            start=start_arg,
-                           end=end_arg)
+                           end=end_arg,
+                           ts=ts_arg)
 
 
 @app.route('/sources/stats', methods=['GET', 'POST'])
 def sources_stats():
+    page_arg, start_arg, end_arg, ts_arg = get_path_args()
+
     if request.method == 'POST':
         try:
             days_sources = request.form['days_sources'] if request.form['days_sources'] else None
@@ -213,11 +248,9 @@ def sources_stats():
             if days_sources:
                 start = datetime.date.today() - timedelta(int(days_sources))
                 end = datetime.date.today() - timedelta(1)
-                return redirect(url_for('campaigns_stats', start=start, end=end))
+                return redirect(url_for('campaigns_stats', start=start, end=end, ts=ts_arg))
         except KeyError:
             pass
-
-    page_arg, start_arg, end_arg = get_path_args()
 
     yesterday = datetime.datetime.now() - timedelta(days=1)
     source_query = DailySource.query.order_by(DailySource.campaign_name)
@@ -233,6 +266,13 @@ def sources_stats():
             and_(DailySource.fetched_at >= yesterday - timedelta(1),
                  DailySource.fetched_at <= yesterday))
 
+    if ts_arg == 'push_house':
+        ph_id = config['traffic_source_ids']['push_house']
+        source_query = source_query.filter_by(traffic_source=ph_id)
+    else:
+        ungads_id = config['traffic_source_ids']['ungads']
+        source_query = source_query.filter_by(traffic_source=ungads_id)
+
     source_list = source_query.all()
 
     unique_sources_names = set()
@@ -245,12 +285,13 @@ def sources_stats():
     sources_stats_list = []
     for campaign_name in unique_campaigns_names:
         for name in unique_sources_names:
-            source_stat = Source(name, campaign_name, 0)
+            source_stat = Source(name, campaign_name, 0, 0)
             source_stat.cost = 0
             source_stat.profit = 0
 
             for source in source_list:
                 if source.name == name and source.campaign_name == campaign_name:
+                    source_stat.traffic_source = source.traffic_source
                     source_stat.revenue += source.revenue
                     source_stat.cost += source.cost
                     source_stat.profit += source.profit
@@ -258,7 +299,7 @@ def sources_stats():
             sources_stats_list.append(source_stat)
 
     if len(sources_stats_list) == 0:
-        return render_empty_sources('sources_stats.html')
+        return render_empty_sources('sources_stats.html', ts_arg)
 
     table = SourceStatsTable(sources_stats_list)
 
@@ -266,11 +307,14 @@ def sources_stats():
                            table=table,
                            pagination_data=None,
                            start=start_arg,
-                           end=end_arg)
+                           end=end_arg,
+                           ts=ts_arg)
 
 
 @app.route('/sources/daily', methods=['GET', 'POST'])
 def daily_sources():
+    page_arg, start_arg, end_arg, ts_arg = get_path_args()
+
     if request.method == 'POST':
         try:
             days_campaigns = request.form['days_sources'] if request.form['days_sources'] else None
@@ -278,11 +322,9 @@ def daily_sources():
             if days_campaigns:
                 start = datetime.date.today() - timedelta(int(days_campaigns))
                 end = start
-                return redirect(url_for('daily_sources', start=start, end=end))
+                return redirect(url_for('daily_sources', start=start, end=end, ts=ts_arg))
         except KeyError:
             pass
-
-    page_arg, start_arg, end_arg = get_path_args()
 
     sources_query = DailySource.query.order_by(DailySource.campaign_name)
 
@@ -299,11 +341,18 @@ def daily_sources():
             and_(DailySource.fetched_at >= yesterday - timedelta(1),
                  DailySource.fetched_at <= yesterday))
 
+    if ts_arg == 'push_house':
+        ph_id = config['traffic_source_ids']['push_house']
+        sources_query = sources_query.filter_by(traffic_source=ph_id)
+    else:
+        ungads_id = config['traffic_source_ids']['ungads']
+        sources_query = sources_query.filter_by(traffic_source=ungads_id)
+
     pagination_metadata = get_pagination_metadata_from_query(page_arg, sources_query)
     sources_list = paginate_data(pagination_metadata, sources_query)
 
     if len(sources_list) == 0:
-        return render_empty_sources('daily_sources.html')
+        return render_empty_sources('daily_sources.html', ts_arg)
 
     table = DailySourceTable(sources_list)
 
@@ -311,7 +360,8 @@ def daily_sources():
                            table=table,
                            pagination_data=pagination_metadata,
                            start=start_arg,
-                           end=end_arg)
+                           end=end_arg,
+                           ts=ts_arg)
 
 
 @app.route('/')

@@ -1,15 +1,26 @@
 api_keys:
   binom: 130000018e09719a5c63999714101de82c18286d
   push_house: aed89d56233d3afa4655852324cdf12b
+  ungads: 799162ae1286e10642fdae41a230221e
+
+traffic_source_ids:
+  push_house: 29
+  ungads: 33
 
 binom_urls:
-  campaigns: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=29&date=12&group1=282&group2=1&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
-  sources: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=29&date=12&group1=282&group2=27&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
+  ph_campaigns: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=29&date=12&group1=282&group2=1&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
+  ph_sources: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=29&date=12&group1=282&group2=27&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
+
+  ungads_campaigns: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=33&date=12&group1=288&group2=1&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
+  ungads_sources: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=33&date=12&group1=288&group2=27&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
 
 push_house_urls:
   stats: https://push.house/api/statistics/
   campaign_action: https://push.house/api/active/
   source_action: https://push.house/api/lists/
+
+ungads_urls:
+  stats: https://ungads.com/api/[API_KEY]/statistics
 
 logging:
   format: '%(asctime)s [%(levelname)s] (%(threadName)s, IN %(funcName)s): %(message)s.'

@@ -6,31 +6,36 @@
                         pagination_source,
                         page=pagination_data['previous'],
                         start=start if start else None,
-                        end=end if end else None) %}
+                        end=end if end else None,
+                        ts=ts if ts else None) %}
 
 {% set next_link=url_for(
                         pagination_source,
                         page=pagination_data['next'],
                         start=start if start else None,
-                        end=end if end else None) %}
+                        end=end if end else None,
+                        ts=ts if ts else None) %}
 
 {% set first_link=url_for(
                         pagination_source,
                         page=pagination_data['first'],
                         start=start if start else None,
-                        end=end if end else None) %}
+                        end=end if end else None,
+                        ts=ts if ts else None) %}
 
 {% set current_link=url_for(
                         pagination_source,
                         page=pagination_data['current'],
                         start=start if start else None,
-                        end=end if end else None) %}
+                        end=end if end else None,
+                        ts=ts if ts else None) %}
 
 {% set last_link=url_for(
                         pagination_source,
                         page=pagination_data['last'],
                         start=start if start else None,
-                        end=end if end else None) %}
+                        end=end if end else None,
+                        ts=ts if ts else None) %}
 
 
 {% block panel %}
@@ -60,18 +65,46 @@
                               name="bar-chart-outline"></ion-icon>
                     <span class="subtitle pl-2">Campaigns</span>
                 </div>
+
+                <br/>
+
+                <div class="buttons has-addons is-centered">
+                    {% if ts == 'push_house' %}
+                        <a class="button is-small is-rounded is-success is-selected"
+                           href="{{ url_for('current_campaigns', ts="push_house") }}">
+                            Push.House
+                        </a>
+
+                        <a class="button is-rounded is-small"
+                           href="{{ url_for('current_campaigns', ts="ungads") }}">
+                            Ungads
+                        </a>
+                    {% else %}
+                        <a class="button is-small is-rounded"
+                           href="{{ url_for('current_campaigns', ts="push_house") }}">
+                            Push.House
+                        </a>
+
+                        <a class="button is-rounded is-small is-success is-selected"
+                           href="{{ url_for('current_campaigns', ts="ungads") }}">
+                            Ungads
+                        </a>
+                    {% endif %}
+                </div>
+
                 <hr/>
 
                 <p class="heading is-size-6 has-text-centered">Live Campaigns</p>
 
                 <hr/>
-                <a href="{{ url_for('daily_campaigns', start=yesterday, end=yesterday) }}" class="navbar-item title is-6 m-0">
+                <a href="{{ url_for('daily_campaigns', start=yesterday, end=yesterday, ts=ts) }}"
+                   class="navbar-item title is-6 m-0">
                     <div class="level">
                         <ion-icon size="large" name="filter-outline"></ion-icon>
                         <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns by Days</span>
                     </div>
                 </a>
-                <a href="{{ url_for('campaigns_stats') }}" class="navbar-item title is-6 m-0">
+                <a href="{{ url_for('campaigns_stats', ts=ts) }}" class="navbar-item title is-6 m-0">
                     <div class="level">
                         <ion-icon size="large" name="pie-chart-outline"></ion-icon>
                         <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns Stats</span>

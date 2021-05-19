@@ -3,10 +3,7 @@ from datetime import datetime
 from models.models import db, Campaign, Source, DailyCampaign, DailySource
 
 
-def set_fetched_at(campaigns, sources, fetched_at=None):
-    if not fetched_at:
-        fetched_at = datetime.now()
-
+def set_fetched_at(campaigns, sources, fetched_at):
     for campaign in campaigns:
         campaign.fetched_at = fetched_at
 
@@ -45,18 +42,6 @@ def remove_daily_data():
     DailyCampaign.query.delete()
     DailySource.query.delete()
     db.session.commit()
-
-
-def campaigns_to_extracted(campaigns, last_days=None):
-    extracted = []
-    for campaign in campaigns:
-        extracted_campaign = campaign.cast_to_extracted()
-        if last_days:
-            extracted_campaign.last_days = last_days
-
-        extracted.append(extracted_campaign)
-
-    return extracted
 
 
 def campaigns_to_daily(campaigns):
