@@ -21,6 +21,8 @@ class Campaign(db.Model):
         self.name = name
         self.revenue = revenue
         self.traffic_source = traffic_source
+        self.cost = 0
+        self.profit = 0
 
     def __repr__(self):
         return f"Campaign (name={self.name}, traffic source={self.traffic_source}, revenue={self.revenue}, cost={self.cost}, profit={self.profit}," \
@@ -47,6 +49,8 @@ class DailyCampaign(db.Model):
         self.name = name
         self.revenue = revenue
         self.traffic_source = traffic_source
+        self.cost = 0
+        self.profit = 0
 
     def __repr__(self):
         return f"DailyCampaign (name={self.name}, traffic source={self.traffic_source}, revenue={self.revenue}, cost={self.cost}, profit={self.profit}," \
@@ -69,6 +73,8 @@ class Source(db.Model):
         self.campaign_name = campaign_name
         self.revenue = revenue
         self.traffic_source = traffic_source
+        self.cost = 0
+        self.profit = 0
 
     def __repr__(self):
         return f"Source (name={self.name}, traffic source={self.traffic_source}, revenue={self.revenue}, cost={self.cost}, profit={self.profit}," \
@@ -97,6 +103,8 @@ class DailySource(db.Model):
         self.campaign_name = campaign_name
         self.revenue = revenue
         self.traffic_source = traffic_source
+        self.cost = 0
+        self.profit = 0
 
     def __repr__(self):
         return f"DailySource (name={self.name}, traffic source={self.traffic_source}, revenue={self.revenue}, cost={self.cost}, profit={self.profit}," \

@@ -84,19 +84,19 @@ def daily_job():
         db.session.commit()
 
 
-def extract_last_month_job():
-    with app.test_request_context():
-        db.init_app(app)
-        remove_daily_data()
+def extract_n_days_job(ts_id, days):
+    # with app.test_request_context():
+    #     db.init_app(app)
+    #     remove_daily_data()
 
-    for days in range(1, 30):
+    for days in range(1, days):
         date = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days)
 
         logging.info(f'Extracting campaigns for {date}')
-        campaigns = api.get_campaigns(date, date)
+        campaigns = api.get_campaigns(ts_id, date, date)
 
         logging.info(f'Extracting sources for {date}')
-        sources = api.get_sources(campaigns, date, date)
+        sources = api.get_sources(campaigns, ts_id, date, date)
 
         daily_campaigns = campaigns_to_daily(campaigns)
         daily_sources = sources_to_daily(sources)

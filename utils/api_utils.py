@@ -132,7 +132,7 @@ class ApiUtils:
 
     def parse_campaign_cost_json(self, ts_id, json):
         if not json:
-            return None
+            return 0
 
         if ts_id == self.config['traffic_source_ids']['push_house']:
             return float(json[0]['cost'])
@@ -220,10 +220,7 @@ class ApiUtils:
 
     def get_campaigns_profit(self, campaigns):
         for campaign in campaigns:
-            if campaign.cost is None or campaign.revenue is None:
-                campaign.profit = None
-            else:
-                campaign.profit = campaign.revenue - campaign.cost
+            campaign.profit = campaign.revenue - campaign.cost
 
         return campaigns
 
