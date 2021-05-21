@@ -21,6 +21,10 @@ push_house_urls:
 
 ungads_urls:
   stats: https://ungads.com/api/[API_KEY]/statistics
+  campaign_action: https://ungads.com/api/[API_KEY]/campaign/[CAMPAIGN_ID]
+  campaign_status: https://ungads.com/api/[API_KEY]/get-campaigns-by-id
+  source_white: https://ungads.com/api/[API_KEY]/campaign/[CAMPAIGN_ID]/white-list
+  source_black: https://ungads.com/api/[API_KEY]/campaign/[CAMPAIGN_ID]/black-list
 
 logging:
   format: '%(asctime)s [%(levelname)s] (%(threadName)s, IN %(funcName)s): %(message)s.'

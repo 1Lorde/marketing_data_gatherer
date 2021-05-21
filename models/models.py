@@ -14,6 +14,7 @@ class Campaign(db.Model):
     revenue = Column(Float)
     cost = Column(Float)
     profit = Column(Float)
+    status = Column(String)
     fetched_at = Column(DateTime)
     fetched_time = synonym('fetched_at')
 
@@ -23,6 +24,7 @@ class Campaign(db.Model):
         self.traffic_source = traffic_source
         self.cost = 0
         self.profit = 0
+        self.status = 'undefined'
 
     def __repr__(self):
         return f"Campaign (name={self.name}, traffic source={self.traffic_source}, revenue={self.revenue}, cost={self.cost}, profit={self.profit}," \

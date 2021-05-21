@@ -25,11 +25,16 @@
                         <div class="field">
                             <div class="field">
                                 <div class="control">
-                                    <input name="name" class="input" type="text" placeholder="name" required>
+                                    <input id="name_input" name="name" class="input" type="text" placeholder="name" required>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <label class="checkbox is-pulled-right pt-2">
+                        <input type="checkbox" id="all_checkbox" onclick="disableInput()">
+                        All names
+                    </label>
                 </div>
 
                 <div class="level-right">
@@ -251,6 +256,7 @@
                                 <div class="select">
                                     <select name="action">
                                         <option value="pause">pause</option>
+                                        <option value="resume">resume</option>
                                     </select>
                                 </div>
                             </div>
@@ -286,6 +292,12 @@
         </div>
 
         <script>
+            function disableInput() {
+                var cb = document.getElementById('all_checkbox').checked;
+                document.getElementById('name_input').disabled = cb;
+                document.getElementById('name_input').value = '';
+            }
+
             function showDiv(element) {
                 switch (element.value) {
                     case "1":

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import schedule as schedule
 
 from gatherer.utils import set_fetched_at, get_last_fetched, save_data_to_db, remove_data_fetched_at, set_last_fetched, \
-    campaigns_to_daily, sources_to_daily, remove_daily_data
+    campaigns_to_daily, sources_to_daily
 from models.models import db, DailyCampaign, DailySource
 from run_web import app
 from utils.api_utils import ApiUtils
@@ -44,6 +44,9 @@ def live_job():
         print(ungads_campaigns)
         print(ungads_sources)
 
+
+def check_rules_job():
+    with app.test_request_context():
         api.check_campaign_rules()
         api.check_source_rules()
 
@@ -119,10 +122,12 @@ if __name__ == '__main__':
     init_logger()
 
     schedule.every(1).minutes.do(live_job)
+    schedule.every(3).minutes.do(check_rules_job)
     schedule.every().day.at("04:00").do(daily_job)
 
     logging.info('Run data gathering script')
     live_job()
+    check_rules_job()
     while 1:
         schedule.run_pending()
         time.sleep(1)

@@ -1,6 +1,11 @@
 from flask_table import Table, Col, DatetimeCol
 
 
+class StatusCol(Col):
+    def td_format(self, content):
+        return '<span class="tag is-medium is-light is-info">' + content + '</span>'
+
+
 class CampaignTable(Table):
     classes = ['table', 'is-striped', 'is-hoverable', 'is-fullwidth', 'is-bordered']
     fetched_time = DatetimeCol("Time", datetime_format="HH:mm:ss")
@@ -9,6 +14,7 @@ class CampaignTable(Table):
     revenue = Col("Revenue")
     cost = Col("Cost")
     profit = Col("Profit")
+    status = StatusCol("Status")
 
     def get_thead_attrs(self):
         return {'style': 'position: sticky; top: 0; '}

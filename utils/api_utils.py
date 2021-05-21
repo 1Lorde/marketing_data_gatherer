@@ -1,8 +1,10 @@
+import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 from requests import HTTPError
+from sqlalchemy.sql.expression import and_
 
 from models.models import Campaign, Source, DailyCampaign, CampaignRule, DailySource, SourceRule
 from utils.rules_utils import get_comparison_operator, get_campaign_action, get_source_action
@@ -13,7 +15,7 @@ class ApiUtils:
         self.config = config
 
     def get_binom_campaigns_url(self, ts_id, start_date=None, end_date=None):
-        if ts_id == self.config['traffic_source_ids']['push_house']:
+        if int(ts_id) == self.config['traffic_source_ids']['push_house']:
             campaigns_url = self.config['binom_urls']['ph_campaigns']
         else:
             campaigns_url = self.config['binom_urls']['ungads_campaigns']
@@ -65,7 +67,7 @@ class ApiUtils:
         return stats_url
 
     def get_binom_sources_url(self, ts_id, start_date=None, end_date=None):
-        if ts_id == self.config['traffic_source_ids']['push_house']:
+        if int(ts_id) == self.config['traffic_source_ids']['push_house']:
             sources_url = self.config['binom_urls']['ph_sources']
         else:
             sources_url = self.config['binom_urls']['ungads_sources']
@@ -116,17 +118,24 @@ class ApiUtils:
 
         return stats_url
 
+    def get_campaign_status_url(self):
+        status_url = self.config['ungads_urls']['campaign_status']
+        ungads_api_key = self.config["api_keys"]["ungads"]
+        status_url = status_url.replace('[API_KEY]', ungads_api_key)
+        return status_url
+
     def parse_campaigns_json(self, json, ts_id):
         campaigns = []
-        for element in json:
-            name = element['name']
+        if json:
+            for element in json:
+                name = element['name']
 
-            if not name.isdigit():
-                continue
+                if not name.isdigit():
+                    continue
 
-            revenue = float(element['revenue'])
-            campaign = Campaign(name, revenue, ts_id)
-            campaigns.append(campaign)
+                revenue = float(element['revenue'])
+                campaign = Campaign(name, revenue, ts_id)
+                campaigns.append(campaign)
 
         return campaigns
 
@@ -134,29 +143,35 @@ class ApiUtils:
         if not json:
             return 0
 
-        if ts_id == self.config['traffic_source_ids']['push_house']:
+        if int(ts_id) == self.config['traffic_source_ids']['push_house']:
             return float(json[0]['cost'])
         else:
             return float(json[0]['spent_advertiser'])
 
+    def parse_campaign_status_json(self, ts_id, json):
+        if not json or int(ts_id) == self.config['traffic_source_ids']['push_house']:
+            return 'undefined'
+
+        return json[next(iter(json))]['status']
+
     def parse_sources_json(self, json, ts_id):
         sources = []
         campaign_name = ''
+        if json:
+            for element in json:
+                if element['level'] == '1':
+                    campaign_name = element['name']
+                    continue
 
-        for element in json:
-            if element['level'] == '1':
-                campaign_name = element['name']
-                continue
-
-            name = element['name']
-            revenue = float(element['revenue'])
-            source = Source(name, campaign_name, revenue, ts_id)
-            sources.append(source)
+                name = element['name']
+                revenue = float(element['revenue'])
+                source = Source(name, campaign_name, revenue, ts_id)
+                sources.append(source)
 
         return sources
 
     def parse_sources_costs_json(self, campaign_name, sources, ts_id, json):
-        if ts_id == self.config['traffic_source_ids']['push_house']:
+        if int(ts_id) == self.config['traffic_source_ids']['push_house']:
             for element in json:
                 for source in sources:
                     if str(element['tname']) == source.name and source.campaign_name == campaign_name:
@@ -192,7 +207,7 @@ class ApiUtils:
     def get_campaigns_costs(self, campaigns, ts_id, start_date=None, end_date=None):
         for campaign in campaigns:
             try:
-                if ts_id == self.config['traffic_source_ids']['push_house']:
+                if int(ts_id) == self.config['traffic_source_ids']['push_house']:
                     if start_date and end_date:
                         url = self.get_push_house_campaign_url(campaign.name, start_date, end_date)
                     else:
@@ -218,6 +233,26 @@ class ApiUtils:
 
         return campaigns
 
+    def get_campaigns_statuses(self, campaigns, ts_id):
+        response = None
+        for campaign in campaigns:
+            try:
+                if int(ts_id) == self.config['traffic_source_ids']['ungads']:
+                    url = self.get_campaign_status_url()
+                    campaign_name = '[' + campaign.name + ']'
+                    response = requests.post(url, data=campaign_name)
+                    response.raise_for_status()
+            except HTTPError as http_err:
+                logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
+            except Exception as err:
+                logging.error(f'Other error occurred: {err}')  # Python 3.6
+            else:
+                if response:
+                    status = self.parse_campaign_status_json(ts_id, response.json())
+                    campaign.status = status
+
+        return campaigns
+
     def get_campaigns_profit(self, campaigns):
         for campaign in campaigns:
             campaign.profit = campaign.revenue - campaign.cost
@@ -229,6 +264,7 @@ class ApiUtils:
             try:
                 campaigns = self.get_campaigns_revenues(ts_id, start_date, end_date)
                 campaigns = self.get_campaigns_costs(campaigns, ts_id, start_date, end_date)
+                campaigns = self.get_campaigns_statuses(campaigns, ts_id)
             except Exception as e:
                 logging.error(f'{e}. Trying again')
                 campaigns = self.get_campaigns_revenues(ts_id, start_date, end_date)
@@ -236,6 +272,7 @@ class ApiUtils:
         else:
             campaigns = self.get_campaigns_revenues(ts_id)
             campaigns = self.get_campaigns_costs(campaigns, ts_id)
+            campaigns = self.get_campaigns_statuses(campaigns, ts_id)
 
         campaigns = self.get_campaigns_profit(campaigns)
 
@@ -265,7 +302,7 @@ class ApiUtils:
     def get_sources_costs(self, campaigns, sources, ts_id, start_date=None, end_date=None):
         for campaign in campaigns:
             try:
-                if ts_id == self.config['traffic_source_ids']['push_house']:
+                if int(ts_id) == self.config['traffic_source_ids']['push_house']:
                     if start_date and end_date:
                         url = self.get_push_house_sources_url(campaign.name, start_date, end_date)
                     else:
@@ -309,25 +346,41 @@ class ApiUtils:
 
         return sources
 
-    def get_campaign_start_url(self, campaign_name):
-        start_url = self.config['push_house_urls']['campaign_action']
+    def get_campaign_start_url(self, campaign_name, ts_id):
+        if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+            start_url = self.config['push_house_urls']['campaign_action']
+            api_key = self.config["api_keys"]["push_house"]
 
-        api_key = self.config["api_keys"]["push_house"]
-        start_url = f'{start_url}{api_key}/1/{campaign_name}'
+            start_url = f'{start_url}{api_key}/1/{campaign_name}'
+        else:
+            start_url = self.config['ungads_urls']['campaign_action']
+            api_key = self.config["api_keys"]["ungads"]
+
+            start_url = start_url.replace('[API_KEY]', api_key)
+            start_url = start_url.replace('[CAMPAIGN_ID]', campaign_name)
+            start_url += '/play'
 
         return start_url
 
-    def get_campaign_stop_url(self, campaign_name):
-        stop_url = self.config['push_house_urls']['campaign_action']
+    def get_campaign_stop_url(self, campaign_name, ts_id):
+        if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+            stop_url = self.config['push_house_urls']['campaign_action']
 
-        api_key = self.config["api_keys"]["push_house"]
-        stop_url = f'{stop_url}{api_key}/0/{campaign_name}'
+            api_key = self.config["api_keys"]["push_house"]
+            stop_url = f'{stop_url}{api_key}/0/{campaign_name}'
+        else:
+            stop_url = self.config['ungads_urls']['campaign_action']
+            api_key = self.config["api_keys"]["ungads"]
+
+            stop_url = stop_url.replace('[API_KEY]', api_key)
+            stop_url = stop_url.replace('[CAMPAIGN_ID]', campaign_name)
+            stop_url += '/pause'
 
         return stop_url
 
-    def start_campaign(self, campaign_name):
+    def start_campaign(self, campaign_name, ts_id):
         try:
-            url = self.get_campaign_start_url(campaign_name)
+            url = self.get_campaign_start_url(campaign_name, ts_id)
 
             response = requests.get(url)
 
@@ -339,11 +392,11 @@ class ApiUtils:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
             logging.info('Start campaign ' + campaign_name)
-            print(response.json())
+            print(response.content)
 
-    def stop_campaign(self, campaign_name):
+    def stop_campaign(self, campaign_name, ts_id):
         try:
-            url = self.get_campaign_stop_url(campaign_name)
+            url = self.get_campaign_stop_url(campaign_name, ts_id)
 
             response = requests.get(url)
 
@@ -355,63 +408,92 @@ class ApiUtils:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
             logging.info('Stop campaign ' + campaign_name)
-            print(response.json())
+            print(response.content)
 
-    def get_source_whitelist_url(self, campaign_name):
-        white_url = self.config['push_house_urls']['source_action']
+    def get_source_blacklist_url(self, campaign_name, ts_id):
+        if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+            black_url = self.config['push_house_urls']['source_action']
 
-        api_key = self.config["api_keys"]["push_house"]
-        white_url = f'{white_url}{api_key}/white/{campaign_name}'
+            api_key = self.config["api_keys"]["push_house"]
+            black_url = f'{black_url}{api_key}/black/{campaign_name}'
+        else:
+            black_url = self.config['ungads_urls']['source_black']
 
-        return white_url
-
-    def get_source_blacklist_url(self, campaign_name):
-        black_url = self.config['push_house_urls']['source_action']
-
-        api_key = self.config["api_keys"]["push_house"]
-        black_url = f'{black_url}{api_key}/black/{campaign_name}'
+            api_key = self.config["api_keys"]["ungads"]
+            black_url = black_url.replace('[API_KEY]', api_key)
+            black_url = black_url.replace('[CAMPAIGN_ID]', campaign_name)
 
         return black_url
 
-    def get_source_clear_list_url(self, campaign_name):
-        clear_url = self.config['push_house_urls']['source_action']
-
-        api_key = self.config["api_keys"]["push_house"]
-        clear_url = f'{clear_url}{api_key}/clear/{campaign_name}'
-
-        return clear_url
-
-    def add_source_to_whitelist(self, campaign_name, source_name):
+    def add_sources_to_blacklist(self, campaign_name, sources_names, ts_id):
+        response = None
+        is_same_sources = None
         try:
-            url = self.get_source_whitelist_url(campaign_name)
-            data = {'list': source_name}
-            response = requests.post(url, data=data)
+            url = self.get_source_blacklist_url(campaign_name, ts_id)
+
+            sources_names = [int(item) for item in sources_names]
+
+            if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+                data = {'list': str(sources_names).replace('[', '').replace(']', '')}
+                response = requests.post(url, data=data)
+                response.raise_for_status()
+            else:
+                blacklisted = requests.get(url)
+                if blacklisted.text:
+                    sources = '[' + blacklisted.text + ']'
+                    sources = json.loads(sources)
+
+                    is_same_sources = all(elem in sources_names for elem in sources)
+
+                    if not is_same_sources:
+                        sources = list(set(sources + sources_names))
+                        response = requests.post(url, data=str(sources))
+                        response.raise_for_status()
+                else:
+                    response = requests.post(url, data=str(sources_names))
+                    response.raise_for_status()
 
             # If the response was successful, no Exception will be raised
-            response.raise_for_status()
         except HTTPError as http_err:
             logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
         except Exception as err:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
-            logging.info(f'Source {source_name} added to whitelist.')
-            print(response.json())
+            if response and not is_same_sources:
+                logging.info(f'Source {sources_names} added to blacklist.')
+                print(response.text)
 
-    def add_source_to_blacklist(self, campaign_name, source_name):
+    def remove_sources_from_blacklist(self, campaign_name, sources_names, ts_id):
+        response = None
         try:
-            url = self.get_source_blacklist_url(campaign_name)
-            data = {'list': source_name}
-            response = requests.post(url, data=data)
+            url = self.get_source_blacklist_url(campaign_name, ts_id)
 
-            # If the response was successful, no Exception will be raised
-            response.raise_for_status()
+            sources_names = [int(item) for item in sources_names]
+
+            if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+                data = {'list': ''}
+                response = requests.post(url, data=data)
+                response.raise_for_status()
+            else:
+                blacklisted = requests.get(url)
+                if blacklisted.text:
+                    sources = '[' + blacklisted.text + ']'
+                    sources = json.loads(sources)
+
+                    sources = set(sources)
+                    sources_names = set(sources_names)
+                    sources = list(sources - sources_names)
+                    response = requests.post(url, data=str(sources))
+                    response.raise_for_status()
+
         except HTTPError as http_err:
             logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
         except Exception as err:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
-            logging.info(f'Source {source_name} added to blacklist.')
-            print(response.json())
+            if response:
+                logging.info(f'Source {sources_names} removed from blacklist.')
+                print(response.text)
 
     def clear_source_lists(self, campaign_name):
         try:
@@ -430,12 +512,39 @@ class ApiUtils:
             print(response.json())
 
     def check_campaign_rules(self):
-        campaigns = DailyCampaign.query.all()
+        rules = CampaignRule.query.all()
         now = datetime.now()
-        for campaign in campaigns:
-            delta = now - campaign.fetched_at
-            rules = CampaignRule.query.filter_by(campaign_name=campaign.name, days=delta.days).all()
-            for rule in rules:
+
+        for rule in rules:
+            if rule.campaign_name != '*':
+                campaigns = DailyCampaign.query.filter(
+                    and_(
+                        DailyCampaign.name == rule.campaign_name,
+                        DailyCampaign.fetched_at >= now - timedelta(days=rule.days))
+                ).all()
+            else:
+                campaigns = DailyCampaign.query.filter(
+                    DailyCampaign.fetched_at >= now - timedelta(days=rule.days)).all()
+
+            unique_campaigns_names = set()
+            [unique_campaigns_names.add(camp.name) for camp in campaigns if camp.name not in unique_campaigns_names]
+
+            campaigns_stats_list = []
+            for name in unique_campaigns_names:
+                campaign_stat = Campaign(name, 0, 0)
+                campaign_stat.cost = 0
+                campaign_stat.profit = 0
+
+                for campaign in campaigns:
+                    if campaign.name == name:
+                        campaign_stat.traffic_source = campaign.traffic_source
+                        campaign_stat.revenue += campaign.revenue
+                        campaign_stat.cost += campaign.cost
+                        campaign_stat.profit += campaign.profit
+
+                campaigns_stats_list.append(campaign_stat)
+
+            for campaign in campaigns_stats_list:
                 boolean_list = []
                 for num in range(int(rule.conditions)):
                     num = num + 1
@@ -446,16 +555,56 @@ class ApiUtils:
 
                 if all(boolean_list):
                     action = get_campaign_action(getattr(rule, 'action'), self)
-                    action(campaign.name)
+                    action(campaign.name, campaign.traffic_source)
 
     def check_source_rules(self):
-        sources = DailySource.query.all()
+        rules = SourceRule.query.all()
         now = datetime.now()
-        for source in sources:
-            delta = now - source.fetched_at
-            rules = SourceRule.query.filter_by(campaign_name=source.campaign_name, source_name=source.name,
-                                               days=delta.days).all()
-            for rule in rules:
+
+        for rule in rules:
+            if rule.source_name != '*':
+                sources = DailySource.query.filter(
+                    and_(
+                        DailySource.name == rule.source_name,
+                        DailySource.campaign_name == rule.campaign_name,
+                        DailySource.fetched_at >= now - timedelta(days=rule.days))
+                ).all()
+            else:
+                sources = DailySource.query.filter(
+                    and_(
+                        DailySource.campaign_name == rule.campaign_name,
+                        DailySource.fetched_at >= now - timedelta(days=rule.days))
+                ).all()
+
+            unique_sources_names = set()
+            [unique_sources_names.add(source.name) for source in sources if source.name not in unique_sources_names]
+
+            unique_campaigns_names = set()
+            [unique_campaigns_names.add(source.campaign_name) for source in sources if
+             source.campaign_name not in unique_campaigns_names]
+
+            sources_stats_list = []
+            for campaign_name in unique_campaigns_names:
+                for name in unique_sources_names:
+                    source_stat = Source(name, campaign_name, 0, 0)
+                    source_stat.cost = 0
+                    source_stat.profit = 0
+
+                    for source in sources:
+                        if source.name == name and source.campaign_name == campaign_name:
+                            source_stat.traffic_source = source.traffic_source
+                            source_stat.revenue += source.revenue
+                            source_stat.cost += source.cost
+                            source_stat.profit += source.profit
+
+                    sources_stats_list.append(source_stat)
+
+            appropriate_sources = []
+            if len(sources_stats_list) != 0:
+                campaign_name = sources_stats_list[0].campaign_name
+                traffic_source = sources_stats_list[0].traffic_source
+
+            for source in sources_stats_list:
                 boolean_list = []
                 for num in range(int(rule.conditions)):
                     num = num + 1
@@ -465,5 +614,8 @@ class ApiUtils:
                     boolean_list.append(operator(source_value, rule_value))
 
                 if all(boolean_list):
-                    action = get_source_action(getattr(rule, 'action'), self)
-                    action(source.campaign_name, source.name)
+                    appropriate_sources.append(source.name)
+
+            if len(appropriate_sources) != 0:
+                action = get_source_action(getattr(rule, 'action'), self)
+                action(campaign_name, appropriate_sources, traffic_source)

@@ -6,7 +6,6 @@ from models.models import CampaignRule, db, SourceRule
 def set_campaign_rule_fields(rule_dict):
     campaign_rule = CampaignRule()
     campaign_rule.conditions = rule_dict['conditions']
-    campaign_rule.campaign_name = rule_dict['name']
     campaign_rule.param1 = rule_dict['param1']
     campaign_rule.sign1 = rule_dict['sign1']
     campaign_rule.param2 = rule_dict['param2']
@@ -17,6 +16,10 @@ def set_campaign_rule_fields(rule_dict):
     campaign_rule.sign4 = rule_dict['sign4']
     campaign_rule.days = rule_dict['days']
     campaign_rule.action = rule_dict['action']
+
+    campaign_rule.campaign_name = rule_dict['name']
+    if not campaign_rule.campaign_name or campaign_rule.campaign_name == '*':
+        campaign_rule.campaign_name = '*'
 
     try:
         campaign_rule.value1 = float(rule_dict['value1'])
@@ -44,7 +47,6 @@ def set_campaign_rule_fields(rule_dict):
 def set_source_rule_fields(rule_dict):
     source_rule = SourceRule()
     source_rule.conditions = rule_dict['conditions']
-    source_rule.source_name = rule_dict['name']
     source_rule.campaign_name = rule_dict['campaign_name']
     source_rule.param1 = rule_dict['param1']
     source_rule.sign1 = rule_dict['sign1']
@@ -56,6 +58,10 @@ def set_source_rule_fields(rule_dict):
     source_rule.sign4 = rule_dict['sign4']
     source_rule.days = rule_dict['days']
     source_rule.action = rule_dict['action']
+
+    source_rule.source_name = rule_dict['name']
+    if not source_rule.source_name or source_rule.source_name == '*':
+        source_rule.source_name = '*'
 
     try:
         source_rule.value1 = float(rule_dict['value1'])
@@ -91,7 +97,7 @@ def get_comparison_operator(operator_str):
         (operator.lt, "<"),
         (operator.gt, ">"),
         (operator.ge, ">="),
-        (operator.le, "=<"),
+        (operator.le, "<="),
     ]
 
     for op, label in operators:
@@ -116,7 +122,8 @@ def get_campaign_action(action_str, api):
 
 def get_source_action(action_str, api):
     actions = [
-        (api.add_source_to_blacklist, "pause")
+        (api.add_sources_to_blacklist, "pause"),
+        (api.remove_sources_from_blacklist, "resume")
     ]
 
     for action, label in actions:
