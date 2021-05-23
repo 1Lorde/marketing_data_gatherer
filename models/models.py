@@ -158,3 +158,18 @@ class SourceRule(db.Model):
 
     def __repr__(self):
         return f"SourceRule (id={self.rule_id})"
+
+
+class PausedSource(db.Model):
+    id = Column(Integer, primary_key=True)
+    source_name = Column(String)
+    campaign_name = Column(String)
+    traffic_source = Column(String)
+
+    def __init__(self, source_name, campaign_name, traffic_source):
+        self.source_name = source_name
+        self.campaign_name = campaign_name
+        self.traffic_source = traffic_source
+
+    def __repr__(self):
+        return f"PausedSource (source_name={self.source_name}, traffic source={self.traffic_source}, campaign_name={self.campaign_name})"

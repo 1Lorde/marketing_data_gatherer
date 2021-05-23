@@ -6,7 +6,7 @@ import requests
 from requests import HTTPError
 from sqlalchemy.sql.expression import and_
 
-from models.models import Campaign, Source, DailyCampaign, CampaignRule, DailySource, SourceRule
+from models.models import Campaign, Source, DailyCampaign, CampaignRule, DailySource, SourceRule, db, PausedSource
 from utils.rules_utils import get_comparison_operator, get_campaign_action, get_source_action
 
 
@@ -128,14 +128,17 @@ class ApiUtils:
         campaigns = []
         if json:
             for element in json:
-                name = element['name']
+                try:
+                    name = element['name']
 
-                if not name.isdigit():
-                    continue
+                    if not name.isdigit():
+                        continue
 
-                revenue = float(element['revenue'])
-                campaign = Campaign(name, revenue, ts_id)
-                campaigns.append(campaign)
+                    revenue = float(element['revenue'])
+                    campaign = Campaign(name, revenue, ts_id)
+                    campaigns.append(campaign)
+                except:
+                    logging.error('Parsing campaigns json error')
 
         return campaigns
 
@@ -159,14 +162,17 @@ class ApiUtils:
         campaign_name = ''
         if json:
             for element in json:
-                if element['level'] == '1':
-                    campaign_name = element['name']
-                    continue
+                try:
+                    if element['level'] == '1':
+                        campaign_name = element['name']
+                        continue
 
-                name = element['name']
-                revenue = float(element['revenue'])
-                source = Source(name, campaign_name, revenue, ts_id)
-                sources.append(source)
+                    name = element['name']
+                    revenue = float(element['revenue'])
+                    source = Source(name, campaign_name, revenue, ts_id)
+                    sources.append(source)
+                except:
+                    logging.error('Parsing sources json error')
 
         return sources
 
@@ -378,6 +384,30 @@ class ApiUtils:
 
         return stop_url
 
+    def get_source_clear_list_url(self, campaign_name):
+        clear_url = self.config['push_house_urls']['source_action']
+
+        api_key = self.config["api_keys"]["push_house"]
+        clear_url = f'{clear_url}{api_key}/clear/{campaign_name}'
+
+        return clear_url
+
+    def clear_source_lists(self, campaign_name):
+        try:
+            url = self.get_source_clear_list_url(campaign_name)
+
+            response = requests.post(url)
+
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except HTTPError as http_err:
+            logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
+        except Exception as err:
+            logging.error(f'Other error occurred: {err}')  # Python 3.6
+        else:
+            logging.info(f'Cleared blacklist')
+            print(response.json())
+
     def start_campaign(self, campaign_name, ts_id):
         try:
             url = self.get_campaign_start_url(campaign_name, ts_id)
@@ -434,7 +464,25 @@ class ApiUtils:
             sources_names = [int(item) for item in sources_names]
 
             if int(ts_id) == self.config['traffic_source_ids']['push_house']:
-                data = {'list': str(sources_names).replace('[', '').replace(']', '')}
+                already_blacklisted = PausedSource.query.filter_by(campaign_name=campaign_name,
+                                                                   traffic_source=ts_id).all()
+
+                blacklisted = []
+                for source_name in sources_names:
+                    paused = PausedSource.query.filter_by(source_name=source_name,
+                                                          campaign_name=campaign_name,
+                                                          traffic_source=ts_id).first()
+                    if not paused:
+                        blacklisted.append(PausedSource(source_name, campaign_name, ts_id))
+                        db.session.add(PausedSource(source_name, campaign_name, ts_id))
+                        db.session.commit()
+
+                if len(blacklisted) == 0:
+                    return
+
+                blacklisted = list((source.source_name for source in blacklisted))
+
+                data = {'list': str(blacklisted + already_blacklisted).replace('[', '').replace(']', '')}
                 response = requests.post(url, data=data)
                 response.raise_for_status()
             else:
@@ -460,7 +508,7 @@ class ApiUtils:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
             if response and not is_same_sources:
-                logging.info(f'Source {sources_names} added to blacklist.')
+                logging.info(f'Source {sources_names} added to blacklist')
                 print(response.text)
 
     def remove_sources_from_blacklist(self, campaign_name, sources_names, ts_id):
@@ -468,13 +516,29 @@ class ApiUtils:
         try:
             url = self.get_source_blacklist_url(campaign_name, ts_id)
 
-            sources_names = [int(item) for item in sources_names]
-
             if int(ts_id) == self.config['traffic_source_ids']['push_house']:
-                data = {'list': ''}
+                already_blacklisted = PausedSource.query.filter_by(campaign_name=campaign_name,
+                                                                   traffic_source=ts_id).all()
+                already_blacklisted = list((source.source_name for source in already_blacklisted))
+
+                for source_name in sources_names:
+                    if source_name in already_blacklisted:
+                        already_blacklisted.remove(source_name)
+                        PausedSource.query.filter_by(source_name=source_name,
+                                                     campaign_name=campaign_name,
+                                                     traffic_source=ts_id).delete()
+                        db.session.commit()
+
+                if len(already_blacklisted) == 0:
+                    self.clear_source_lists(campaign_name)
+                    return
+
+                data = {'list': str(already_blacklisted).replace('[', '').replace(']', '')}
                 response = requests.post(url, data=data)
                 response.raise_for_status()
             else:
+                sources_names = [int(item) for item in sources_names]
+
                 blacklisted = requests.get(url)
                 if blacklisted.text:
                     sources = '[' + blacklisted.text + ']'
@@ -492,24 +556,8 @@ class ApiUtils:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
             if response:
-                logging.info(f'Source {sources_names} removed from blacklist.')
+                logging.info(f'Source {sources_names} removed from blacklist')
                 print(response.text)
-
-    def clear_source_lists(self, campaign_name):
-        try:
-            url = self.get_source_clear_list_url(campaign_name)
-
-            response = requests.post(url)
-
-            # If the response was successful, no Exception will be raised
-            response.raise_for_status()
-        except HTTPError as http_err:
-            logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
-        except Exception as err:
-            logging.error(f'Other error occurred: {err}')  # Python 3.6
-        else:
-            logging.info(f'Cleared all lists.')
-            print(response.json())
 
     def check_campaign_rules(self):
         rules = CampaignRule.query.all()
