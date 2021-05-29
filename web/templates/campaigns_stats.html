@@ -120,7 +120,7 @@
                     </li>
 
                     <li>
-                        <a href="{{ url_for('campaigns_stats', start=yesterday, end=yesterday, ts=ts) }}"
+                        <a href="{{ url_for('campaigns_stats', start=yesterday, end=today, ts=ts) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="today-outline"></ion-icon>
@@ -130,7 +130,7 @@
                     </li>
 
                     <li>
-                        <a href="{{ url_for('campaigns_stats', start=three_days, end=yesterday, ts=ts) }}"
+                        <a href="{{ url_for('campaigns_stats', start=three_days, end=today, ts=ts) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="calendar-outline"></ion-icon>
@@ -140,7 +140,7 @@
                     </li>
 
                     <li>
-                        <a href="{{ url_for('campaigns_stats', start=week, end=yesterday, ts=ts) }}"
+                        <a href="{{ url_for('campaigns_stats', start=week, end=today, ts=ts) }}"
                            class="navbar-item title is-6">
                             <div class="level-left">
                                 <ion-icon name="calendar-outline"></ion-icon>

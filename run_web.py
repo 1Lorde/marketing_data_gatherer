@@ -36,8 +36,8 @@ api = None
 def inject_dates():
     return {'today': datetime.date.today(),
             'yesterday': datetime.date.today() - timedelta(days=1),
-            'three_days': datetime.date.today() - timedelta(days=3),
-            'week': datetime.date.today() - timedelta(days=7),
+            'three_days': datetime.date.today() - timedelta(days=2),
+            'week': datetime.date.today() - timedelta(days=6),
             }
 
 
@@ -86,14 +86,18 @@ def campaigns_stats():
             days_campaigns = request.form['days_campaigns'] if request.form['days_campaigns'] else None
 
             if days_campaigns:
-                start = datetime.date.today() - timedelta(int(days_campaigns))
-                end = datetime.date.today() - timedelta(1)
+                if int(days_campaigns) == 1:
+                    return redirect(url_for('current_campaigns', ts=ts_arg))
+
+                start = datetime.date.today() - timedelta(int(days_campaigns) - 1)
+                end = datetime.date.today()
                 return redirect(url_for('campaigns_stats', start=start, end=end, ts=ts_arg))
         except KeyError:
             pass
 
     yesterday = datetime.datetime.now() - timedelta(days=1)
     campaign_query = DailyCampaign.query.order_by(DailyCampaign.name)
+    current_campaign_query = Campaign.query.order_by(Campaign.name)
 
     if start_arg and end_arg:
         start = start_arg + ' 00:00:00'
@@ -109,11 +113,15 @@ def campaigns_stats():
     if ts_arg == 'push_house':
         ph_id = config['traffic_source_ids']['push_house']
         campaign_query = campaign_query.filter_by(traffic_source=ph_id)
+        current_campaign_query = current_campaign_query.filter_by(traffic_source=ph_id)
     else:
         ungads_id = config['traffic_source_ids']['ungads']
         campaign_query = campaign_query.filter_by(traffic_source=ungads_id)
+        current_campaign_query = current_campaign_query.filter_by(traffic_source=ungads_id)
 
     campaigns_list = campaign_query.all()
+    current_campaigns_list = current_campaign_query.all()
+    campaigns_list = campaigns_list + current_campaigns_list
 
     unique_campaigns_names = set()
     [unique_campaigns_names.add(camp.name) for camp in campaigns_list if camp.name not in unique_campaigns_names]
@@ -157,6 +165,10 @@ def daily_campaigns():
             days_campaigns = request.form['days_campaigns'] if request.form['days_campaigns'] else None
 
             if days_campaigns:
+                if days_campaigns:
+                    if int(days_campaigns) == 1:
+                        return redirect(url_for('current_campaigns', ts=ts_arg))
+
                 start = datetime.date.today() - timedelta(int(days_campaigns))
                 end = start
                 return redirect(url_for('daily_campaigns', start=start, end=end, ts=ts_arg))
@@ -246,6 +258,10 @@ def sources_stats():
             days_sources = request.form['days_sources'] if request.form['days_sources'] else None
 
             if days_sources:
+                if days_sources:
+                    if int(days_sources) == 1:
+                        return redirect(url_for('current_sources', ts=ts_arg))
+
                 start = datetime.date.today() - timedelta(int(days_sources))
                 end = datetime.date.today() - timedelta(1)
                 return redirect(url_for('campaigns_stats', start=start, end=end, ts=ts_arg))
@@ -254,6 +270,7 @@ def sources_stats():
 
     yesterday = datetime.datetime.now() - timedelta(days=1)
     source_query = DailySource.query.order_by(DailySource.campaign_name)
+    current_source_query = Source.query.order_by(Source.campaign_name)
 
     if start_arg and end_arg:
         start = start_arg + ' 00:00:00'
@@ -269,11 +286,15 @@ def sources_stats():
     if ts_arg == 'push_house':
         ph_id = config['traffic_source_ids']['push_house']
         source_query = source_query.filter_by(traffic_source=ph_id)
+        current_source_query = current_source_query.filter_by(traffic_source=ph_id)
     else:
         ungads_id = config['traffic_source_ids']['ungads']
         source_query = source_query.filter_by(traffic_source=ungads_id)
+        current_source_query = current_source_query.filter_by(traffic_source=ungads_id)
 
     source_list = source_query.all()
+    current_source_list = current_source_query.all()
+    source_list = source_list + current_source_list
 
     unique_sources_names = set()
     [unique_sources_names.add(source.name) for source in source_list if source.name not in unique_sources_names]
@@ -317,10 +338,14 @@ def daily_sources():
 
     if request.method == 'POST':
         try:
-            days_campaigns = request.form['days_sources'] if request.form['days_sources'] else None
+            days_sources = request.form['days_sources'] if request.form['days_sources'] else None
 
-            if days_campaigns:
-                start = datetime.date.today() - timedelta(int(days_campaigns))
+            if days_sources:
+                if days_sources:
+                    if int(days_sources) == 1:
+                        return redirect(url_for('current_sources', ts=ts_arg))
+
+                start = datetime.date.today() - timedelta(int(days_sources))
                 end = start
                 return redirect(url_for('daily_sources', start=start, end=end, ts=ts_arg))
         except KeyError:

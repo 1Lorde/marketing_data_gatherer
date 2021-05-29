@@ -570,9 +570,20 @@ class ApiUtils:
                         DailyCampaign.name == rule.campaign_name,
                         DailyCampaign.fetched_at >= now - timedelta(days=rule.days))
                 ).all()
+
+                current_campaigns = Campaign.query.filter(
+                    and_(
+                        Campaign.name == rule.campaign_name,
+                        Campaign.fetched_at >= now - timedelta(days=rule.days))
+                ).all()
             else:
                 campaigns = DailyCampaign.query.filter(
                     DailyCampaign.fetched_at >= now - timedelta(days=rule.days)).all()
+
+                current_campaigns = Campaign.query.filter(
+                    Campaign.fetched_at >= now - timedelta(days=rule.days)).all()
+
+            campaigns = campaigns + current_campaigns
 
             unique_campaigns_names = set()
             [unique_campaigns_names.add(camp.name) for camp in campaigns if camp.name not in unique_campaigns_names]
@@ -617,12 +628,27 @@ class ApiUtils:
                         DailySource.campaign_name == rule.campaign_name,
                         DailySource.fetched_at >= now - timedelta(days=rule.days))
                 ).all()
+
+                current_sources = Source.query.filter(
+                    and_(
+                        Source.name == rule.source_name,
+                        Source.campaign_name == rule.campaign_name,
+                        Source.fetched_at >= now - timedelta(days=rule.days))
+                ).all()
             else:
                 sources = DailySource.query.filter(
                     and_(
                         DailySource.campaign_name == rule.campaign_name,
                         DailySource.fetched_at >= now - timedelta(days=rule.days))
                 ).all()
+
+                current_sources = Source.query.filter(
+                    and_(
+                        Source.campaign_name == rule.campaign_name,
+                        Source.fetched_at >= now - timedelta(days=rule.days))
+                ).all()
+
+            sources = sources + current_sources
 
             unique_sources_names = set()
             [unique_sources_names.add(source.name) for source in sources if source.name not in unique_sources_names]
