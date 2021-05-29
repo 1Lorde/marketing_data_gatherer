@@ -206,8 +206,8 @@ class ApiUtils:
         except Exception as err:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
-            logging.info('Fetched campaigns revenues')
-            print(response.json())
+            logging.debug('Fetched campaigns revenues')
+            logging.debug(response.json())
             return self.parse_campaigns_json(response.json(), ts_id)
 
     def get_campaigns_costs(self, campaigns, ts_id, start_date=None, end_date=None):
@@ -234,7 +234,7 @@ class ApiUtils:
                 logging.error(f'Other error occurred: {err}')  # Python 3.6
             else:
                 cost = self.parse_campaign_cost_json(ts_id, response.json())
-                logging.info(f'Fetched cost {cost} for campaign {campaign.name} from ts {ts_id}')
+                logging.debug(f'Fetched cost {cost} for campaign {campaign.name} from ts {ts_id}')
                 campaign.cost = cost
 
         return campaigns
@@ -300,8 +300,8 @@ class ApiUtils:
         except Exception as err:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
-            logging.info('Fetching sources')
-            print(response.json())
+            logging.debug('Fetched sources revenues')
+            logging.debug(response.json())
 
             return self.parse_sources_json(response.json(), ts_id)
 
@@ -329,7 +329,7 @@ class ApiUtils:
                 logging.error(f'Other error occurred: {err}')  # Python 3.6
             else:
                 sources = self.parse_sources_costs_json(campaign.name, sources, ts_id, response.json())
-                logging.info(f'Fetched costs for sources with campaign_name {campaign.name}')
+                logging.debug(f'Fetched costs for sources with campaign_name {campaign.name}')
 
         return sources
 
@@ -405,8 +405,8 @@ class ApiUtils:
         except Exception as err:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
-            logging.info(f'Cleared blacklist')
-            print(response.json())
+            logging.info(f'Cleared blacklist for campaign ' + campaign_name)
+            logging.debug(response.json())
 
     def start_campaign(self, campaign_name, ts_id):
         try:
@@ -421,8 +421,8 @@ class ApiUtils:
         except Exception as err:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
-            logging.info('Start campaign ' + campaign_name)
-            print(response.content)
+            logging.info('Resumed campaign ' + campaign_name)
+            logging.debug(response.content)
 
     def stop_campaign(self, campaign_name, ts_id):
         try:
@@ -437,8 +437,8 @@ class ApiUtils:
         except Exception as err:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
-            logging.info('Stop campaign ' + campaign_name)
-            print(response.content)
+            logging.info('Paused campaign ' + campaign_name)
+            logging.debug(response.content)
 
     def get_source_blacklist_url(self, campaign_name, ts_id):
         if int(ts_id) == self.config['traffic_source_ids']['push_house']:
@@ -509,7 +509,7 @@ class ApiUtils:
         else:
             if response and not is_same_sources:
                 logging.info(f'Source {sources_names} added to blacklist')
-                print(response.text)
+                logging.debug(response.text)
 
     def remove_sources_from_blacklist(self, campaign_name, sources_names, ts_id):
         response = None
@@ -557,7 +557,7 @@ class ApiUtils:
         else:
             if response:
                 logging.info(f'Source {sources_names} removed from blacklist')
-                print(response.text)
+                logging.debug(response.text)
 
     def check_campaign_rules(self):
         rules = CampaignRule.query.all()
@@ -613,6 +613,7 @@ class ApiUtils:
                     boolean_list.append(operator(campaign_value, rule_value))
 
                 if all(boolean_list):
+                    logging.info(f"Applying rule for campaign {rule.campaign_name}")
                     action = get_campaign_action(getattr(rule, 'action'), self)
                     action(campaign.name, campaign.traffic_source)
 
@@ -691,5 +692,7 @@ class ApiUtils:
                     appropriate_sources.append(source.name)
 
             if len(appropriate_sources) != 0:
+                logging.info(f"Applying rule for source id {rule.source_name} for campaign {rule.campaign_name}")
+
                 action = get_source_action(getattr(rule, 'action'), self)
                 action(campaign_name, appropriate_sources, traffic_source)

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block panel %}
+    <div class="section"></div>
+{% endblock %}
+
+{% block content %}
+    <div class="container box table_div">
+        {% if logs %}
+            <ul>
+                {% for log in logs %}
+                    <div class="block subtitle is-5">
+                        <li>
+                            {% set record = log.split('-') %}
+                            <span class="tag is-medium is-light is-rounded">{{ record[0] }}</span>
+                            <span>&nbsp;&nbsp;{{ record[1] }}</span>
+                        </li>
+                    </div>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No logs here</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block side_menu %}
+    <div class="box">
+        <aside class="menu">
+            <div class="block">
+                <div class="level-left">
+                    <ion-icon class="has-text-link" size="large"
+                              name="document-text-outline"></ion-icon>
+                    <span class="subtitle pl-2">Logs of rules application</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+{% endblock %}

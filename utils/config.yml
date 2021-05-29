@@ -29,3 +29,6 @@ ungads_urls:
 logging:
   format: '%(asctime)s [%(levelname)s] (%(threadName)s, IN %(funcName)s): %(message)s.'
   date_format: '%H:%M:%S %d.%m.%y'
+
+  file_format: '%(asctime)s - %(message)s.'
+  file_date_format: '%H:%M:%S'

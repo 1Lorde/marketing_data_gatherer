@@ -463,6 +463,19 @@ def sources_delete_rule(rule_id):
                            message="Are you really want to delete rule for SourceId " + deleted_rule.source_name + "?")
 
 
+@app.route('/logs', methods=['GET'])
+def logs():
+    log = []
+    try:
+        with open('logs/rules.log', 'r') as f:
+            log = f.readlines()
+            log = reversed(log)
+    except FileNotFoundError:
+        pass
+
+    return render_template('logs.html', logs=log)
+
+
 if __name__ == '__main__':
     config = read_config()
     api = ApiUtils(config)

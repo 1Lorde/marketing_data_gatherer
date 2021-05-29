@@ -9,7 +9,7 @@ from gatherer.utils import set_fetched_at, get_last_fetched, save_data_to_db, re
 from models.models import db, DailyCampaign, DailySource
 from run_web import app
 from utils.api_utils import ApiUtils
-from utils.utils import read_config, init_logger
+from utils.utils import read_config, init_logger, init_file_logger
 
 api = None
 config = None
@@ -39,10 +39,10 @@ def live_job():
         save_data_to_db(ungads_campaigns, ungads_sources)
         set_last_fetched(fetched_at)
 
-        print(ph_campaigns)
-        print(ph_sources)
-        print(ungads_campaigns)
-        print(ungads_sources)
+        logging.debug(ph_campaigns)
+        logging.debug(ph_sources)
+        logging.debug(ungads_campaigns)
+        logging.debug(ungads_sources)
 
 
 def check_rules_job():
@@ -95,10 +95,10 @@ def extract_n_days_job(ts_id, days):
     for days in range(1, days):
         date = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days)
 
-        logging.info(f'Extracting campaigns for {date}')
+        logging.debug(f'Extracting campaigns for {date}')
         campaigns = api.get_campaigns(ts_id, date, date)
 
-        logging.info(f'Extracting sources for {date}')
+        logging.debug(f'Extracting sources for {date}')
         sources = api.get_sources(campaigns, ts_id, date, date)
 
         daily_campaigns = campaigns_to_daily(campaigns)
@@ -111,8 +111,8 @@ def extract_n_days_job(ts_id, days):
             db.init_app(app)
             save_data_to_db(daily_campaigns, daily_sources)
 
-        print(daily_campaigns)
-        print(daily_sources)
+        logging.debug(daily_campaigns)
+        logging.debug(daily_sources)
         time.sleep(7)
 
 
@@ -120,12 +120,13 @@ if __name__ == '__main__':
     config = read_config()
     api = ApiUtils(config)
     init_logger()
+    init_file_logger()
 
     schedule.every(1).minutes.do(live_job)
     schedule.every(3).minutes.do(check_rules_job)
     schedule.every().day.at("04:00").do(daily_job)
 
-    logging.info('Run data gathering script')
+    logging.debug('Run data gathering script')
     live_job()
     check_rules_job()
     while 1:
