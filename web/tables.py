@@ -3,6 +3,9 @@ from flask_table import Table, Col, DatetimeCol
 
 class StatusCol(Col):
     def td_format(self, content):
+        if content == 'running':
+            return '<span class="tag is-medium is-light is-success">' + content + '</span>'
+
         return '<span class="tag is-medium is-light is-info">' + content + '</span>'
 
 

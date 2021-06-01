@@ -6,7 +6,8 @@ import requests
 from requests import HTTPError
 from sqlalchemy.sql.expression import and_
 
-from models.models import Campaign, Source, DailyCampaign, CampaignRule, DailySource, SourceRule, db, PausedSource
+from models.models import Campaign, Source, DailyCampaign, CampaignRule, DailySource, SourceRule, db, PausedSource, \
+    PausedCampaign
 from utils.rules_utils import get_comparison_operator, get_campaign_action, get_source_action
 
 
@@ -248,6 +249,14 @@ class ApiUtils:
                     campaign_name = '[' + campaign.name + ']'
                     response = requests.post(url, data=campaign_name)
                     response.raise_for_status()
+                else:
+                    paused = PausedCampaign.query.filter_by(campaign_name=campaign.name,
+                                                            traffic_source=ts_id).first()
+                    if paused:
+                        campaign.status = 'paused'
+                    else:
+                        campaign.status = 'running'
+
             except HTTPError as http_err:
                 logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
             except Exception as err:
@@ -411,11 +420,18 @@ class ApiUtils:
     def start_campaign(self, campaign_name, ts_id):
         try:
             url = self.get_campaign_start_url(campaign_name, ts_id)
+            paused = PausedCampaign.query.filter_by(campaign_name=campaign_name,
+                                                    traffic_source=ts_id).first()
+            if not paused:
+                return
 
             response = requests.get(url)
-
-            # If the response was successful, no Exception will be raised
             response.raise_for_status()
+            logging.info(f"Applying rule for campaign {campaign_name}")
+
+            PausedCampaign.query.filter_by(campaign_name=campaign_name,
+                                           traffic_source=ts_id).delete()
+            db.session.commit()
         except HTTPError as http_err:
             logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
         except Exception as err:
@@ -427,11 +443,16 @@ class ApiUtils:
     def stop_campaign(self, campaign_name, ts_id):
         try:
             url = self.get_campaign_stop_url(campaign_name, ts_id)
+            paused = PausedCampaign.query.filter_by(campaign_name=campaign_name,
+                                                    traffic_source=ts_id).first()
+            if paused:
+                return
 
             response = requests.get(url)
-
-            # If the response was successful, no Exception will be raised
             response.raise_for_status()
+
+            db.session.add(PausedCampaign(campaign_name, ts_id))
+            db.session.commit()
         except HTTPError as http_err:
             logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
         except Exception as err:
@@ -613,7 +634,6 @@ class ApiUtils:
                     boolean_list.append(operator(campaign_value, rule_value))
 
                 if all(boolean_list):
-                    logging.info(f"Applying rule for campaign {rule.campaign_name}")
                     action = get_campaign_action(getattr(rule, 'action'), self)
                     action(campaign.name, campaign.traffic_source)
 

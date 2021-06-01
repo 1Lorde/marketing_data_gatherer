@@ -31,4 +31,4 @@ logging:
   date_format: '%H:%M:%S %d.%m.%y'
 
   file_format: '%(asctime)s - %(message)s.'
-  file_date_format: '%H:%M:%S'
+  file_date_format: '%H:%M:%S - %d.%m.%y'

@@ -173,3 +173,16 @@ class PausedSource(db.Model):
 
     def __repr__(self):
         return f"PausedSource (source_name={self.source_name}, traffic source={self.traffic_source}, campaign_name={self.campaign_name})"
+
+
+class PausedCampaign(db.Model):
+    id = Column(Integer, primary_key=True)
+    campaign_name = Column(String)
+    traffic_source = Column(String)
+
+    def __init__(self, campaign_name, traffic_source):
+        self.campaign_name = campaign_name
+        self.traffic_source = traffic_source
+
+    def __repr__(self):
+        return f"PausedCampaign (campaign_name={self.campaign_name}, traffic source={self.traffic_source})"

@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from datetime import datetime, timedelta
 
@@ -19,20 +20,20 @@ def live_job():
     ph_id = config['traffic_source_ids']['push_house']
     ungads_id = config['traffic_source_ids']['ungads']
 
-    ph_campaigns = api.get_campaigns(ph_id)
-    ph_sources = api.get_sources(ph_campaigns, ph_id)
-
-    ungads_campaigns = api.get_campaigns(ungads_id)
-    ungads_sources = api.get_sources(ungads_campaigns, ungads_id)
-
-    now = datetime.now()
-    ph_campaigns, ph_sources, fetched_at = set_fetched_at(ph_campaigns, ph_sources, now)
-    ungads_campaigns, ungads_sources, fetched_at = set_fetched_at(ungads_campaigns, ungads_sources, now)
-
-    last_fetched_at = get_last_fetched()
-
     with app.test_request_context():
         db.init_app(app)
+
+        ph_campaigns = api.get_campaigns(ph_id)
+        ph_sources = api.get_sources(ph_campaigns, ph_id)
+
+        ungads_campaigns = api.get_campaigns(ungads_id)
+        ungads_sources = api.get_sources(ungads_campaigns, ungads_id)
+
+        now = datetime.now()
+        ph_campaigns, ph_sources, fetched_at = set_fetched_at(ph_campaigns, ph_sources, now)
+        ungads_campaigns, ungads_sources, fetched_at = set_fetched_at(ungads_campaigns, ungads_sources, now)
+
+        last_fetched_at = get_last_fetched()
 
         remove_data_fetched_at(last_fetched_at)
         save_data_to_db(ph_campaigns, ph_sources)

@@ -6,14 +6,15 @@
 
 {% block content %}
     <div class="container box table_div">
-        {% if logs %}
+        {% if logs|length > 0 %}
             <ul>
                 {% for log in logs %}
                     <div class="block subtitle is-5">
                         <li>
                             {% set record = log.split('-') %}
-                            <span class="tag is-medium is-light is-rounded">{{ record[0] }}</span>
-                            <span>&nbsp;&nbsp;{{ record[1] }}</span>
+                            <span class="tag is-medium is-dark is-rounded">{{ record[0] }}</span>
+                            <span class="tag is-medium is-light is-rounded">{{ record[1] }}</span>
+                            <span>&nbsp;&nbsp;{{ record[2] }}</span>
                         </li>
                     </div>
                 {% endfor %}

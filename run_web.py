@@ -264,7 +264,7 @@ def sources_stats():
 
                 start = datetime.date.today() - timedelta(int(days_sources))
                 end = datetime.date.today() - timedelta(1)
-                return redirect(url_for('campaigns_stats', start=start, end=end, ts=ts_arg))
+                return redirect(url_for('sources_stats', start=start, end=end, ts=ts_arg))
         except KeyError:
             pass
 
@@ -465,15 +465,22 @@ def sources_delete_rule(rule_id):
 
 @app.route('/logs', methods=['GET'])
 def logs():
-    log = []
-    try:
-        with open('logs/rules.log', 'r') as f:
-            log = f.readlines()
-            log = reversed(log)
-    except FileNotFoundError:
-        pass
+    dir_list = os.listdir('logs')
+    dir_list.sort()
 
-    return render_template('logs.html', logs=log)
+    logs_data = []
+    for log_file in dir_list:
+        try:
+            with open('logs/' + log_file, 'r') as f:
+                log = f.readlines()
+                log = list(reversed(log))
+                logs_data.append(log)
+        except FileNotFoundError:
+            pass
+
+    logs_data = [item for sublist in logs_data for item in sublist]
+    ' '.join(logs_data)
+    return render_template('logs.html', logs=logs_data)
 
 
 if __name__ == '__main__':
