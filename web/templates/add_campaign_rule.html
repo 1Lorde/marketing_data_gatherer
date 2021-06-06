@@ -8,8 +8,12 @@
 {% endblock %}
 
 {% block message_header %}
-    <ion-icon size="large" name="add-circle-outline"></ion-icon>
-    <span class="pl-2">Add rule for Campaign</span>
+    <span class="icon-text">
+        <span class="icon">
+            <ion-icon size="large" name="add-circle-outline"></ion-icon>
+        </span>
+        <span class="ml-2">Add rule for Campaign</span>
+    </span>
 {% endblock %}
 
 {% block message_body %}
@@ -48,7 +52,22 @@
                                 <div class="select">
                                     <select name="param1">
                                         <option selected disabled>field</option>
-                                        <option value="profit">profit</option>
+                                        <option value="profit">Profit</option>
+                                        <option value="clicks">Clicks</option>
+                                        <option value="binom_clicks">Binom clicks</option>
+                                        <option value="impressions">Impressions</option>
+                                        <option value="lp_clicks">LP clicks</option>
+                                        <option value="ctr">CTR</option>
+                                        <option value="lp_ctr">LP CTR</option>
+                                        <option value="leads">Leads</option>
+                                        <option value="cost">Cost</option>
+                                        <option value="revenue">Revenue</option>
+                                        <option value="profit">Profit</option>
+                                        <option value="roi">ROI</option>
+                                        <option value="payout">Payout</option>
+                                        <option value="cpc">CPC</option>
+                                        <option value="cpm">CPM</option>
+                                        <option value="epc">EPC</option>
                                     </select>
                                 </div>
                             </div>
@@ -92,7 +111,22 @@
                                 <div class="select">
                                     <select name="param2">
                                         <option selected disabled>field</option>
-                                        <option value="profit">profit</option>
+                                        <option value="profit">Profit</option>
+                                        <option value="clicks">Clicks</option>
+                                        <option value="binom_clicks">Binom clicks</option>
+                                        <option value="impressions">Impressions</option>
+                                        <option value="lp_clicks">LP clicks</option>
+                                        <option value="ctr">CTR</option>
+                                        <option value="lp_ctr">LP CTR</option>
+                                        <option value="leads">Leads</option>
+                                        <option value="cost">Cost</option>
+                                        <option value="revenue">Revenue</option>
+                                        <option value="profit">Profit</option>
+                                        <option value="roi">ROI</option>
+                                        <option value="payout">Payout</option>
+                                        <option value="cpc">CPC</option>
+                                        <option value="cpm">CPM</option>
+                                        <option value="epc">EPC</option>
                                     </select>
                                 </div>
                             </div>
@@ -136,7 +170,22 @@
                                 <div class="select">
                                     <select name="param3">
                                         <option selected disabled>field</option>
-                                        <option value="profit">profit</option>
+                                        <option value="profit">Profit</option>
+                                        <option value="clicks">Clicks</option>
+                                        <option value="binom_clicks">Binom clicks</option>
+                                        <option value="impressions">Impressions</option>
+                                        <option value="lp_clicks">LP clicks</option>
+                                        <option value="ctr">CTR</option>
+                                        <option value="lp_ctr">LP CTR</option>
+                                        <option value="leads">Leads</option>
+                                        <option value="cost">Cost</option>
+                                        <option value="revenue">Revenue</option>
+                                        <option value="profit">Profit</option>
+                                        <option value="roi">ROI</option>
+                                        <option value="payout">Payout</option>
+                                        <option value="cpc">CPC</option>
+                                        <option value="cpm">CPM</option>
+                                        <option value="epc">EPC</option>
                                     </select>
                                 </div>
                             </div>
@@ -180,7 +229,22 @@
                                 <div class="select">
                                     <select name="param4">
                                         <option selected disabled>field</option>
-                                        <option value="profit">profit</option>
+                                        <option value="profit">Profit</option>
+                                        <option value="clicks">Clicks</option>
+                                        <option value="binom_clicks">Binom clicks</option>
+                                        <option value="impressions">Impressions</option>
+                                        <option value="lp_clicks">LP clicks</option>
+                                        <option value="ctr">CTR</option>
+                                        <option value="lp_ctr">LP CTR</option>
+                                        <option value="leads">Leads</option>
+                                        <option value="cost">Cost</option>
+                                        <option value="revenue">Revenue</option>
+                                        <option value="profit">Profit</option>
+                                        <option value="roi">ROI</option>
+                                        <option value="payout">Payout</option>
+                                        <option value="cpc">CPC</option>
+                                        <option value="cpm">CPM</option>
+                                        <option value="epc">EPC</option>
                                     </select>
                                 </div>
                             </div>
@@ -321,9 +385,13 @@
         <aside class="menu">
             <div class="block">
                 <div class="level-left">
-                    <ion-icon class="has-text-link" size="large"
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon class="has-text-link" size="large"
                               name="cog-outline"></ion-icon>
-                    <span class="subtitle pl-2">Rules Control</span>
+                        </span>
+                        <span class="subtitle ml-2">Rules Control</span>
+                    </span>
                 </div>
                 <hr/>
 
@@ -331,10 +399,12 @@
 
                 <hr/>
                 <a href="{{ url_for('campaigns_rules') }}" class="navbar-item title is-6 m-0">
-                    <div class="level">
-                        <ion-icon size="large" name="list-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">Rules List</span>
-                    </div>
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="list-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">Rules List</span>
+                    </span>
                 </a>
             </div>
         </aside>

@@ -36,8 +36,12 @@
 {% endblock %}
 
 {% block message_header %}
-    <ion-icon size="large" name="stats-chart-outline"></ion-icon>
-    <span class="pl-2">Live SourceIds</span>
+    <span class="icon-text">
+        <span class="icon">
+            <ion-icon size="large" name="stats-chart-outline"></ion-icon>
+        </span>
+        <span class="ml-2">Live SourceIds</span>
+    </span>
 {% endblock %}
 
 {% block message_body %}
@@ -51,9 +55,13 @@
         <aside class="menu">
             <div class="block">
                 <div class="level-left">
-                    <ion-icon class="has-text-info" size="large"
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon class="has-text-info" size="large"
                               name="stats-chart-outline"></ion-icon>
-                    <span class="subtitle pl-2">SourceIds</span>
+                        </span>
+                        <span class="subtitle ml-2">SourceIds</span>
+                    </span>
                 </div>
 
                 <br/>
@@ -87,17 +95,22 @@
                 <p class="heading is-size-6 has-text-centered">Live SourceIds</p>
 
                 <hr/>
-                <a href="{{ url_for('daily_sources', start=yesterday, end=yesterday, ts=ts) }}" class="navbar-item title is-6 m-0">
-                    <div class="level">
-                        <ion-icon size="large" name="filter-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds by Days</span>
-                    </div>
+                <a href="{{ url_for('daily_sources', start=yesterday, end=yesterday, ts=ts) }}"
+                   class="navbar-item title is-6 m-0">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="filter-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">SourceIds by Days</span>
+                    </span>
                 </a>
                 <a href="{{ url_for('sources_stats', ts=ts) }}" class="navbar-item title is-6 m-0">
-                    <div class="level">
+                    <span class="icon-text">
+                        <span class="icon">
                         <ion-icon size="large" name="pie-chart-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds Stats</span>
-                    </div>
+                        </span>
+                        <span class="ml-2">SourceIds Stats</span>
+                    </span>
                 </a>
             </div>
         </aside>

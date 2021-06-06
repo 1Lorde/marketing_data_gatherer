@@ -82,42 +82,52 @@
             <div class="level-right">
                 <div class="level-item">
                     <a href="{{ url_for('current_campaigns') }}" class="navbar-item title is-6">
-                        <div class="level">
-                            <ion-icon size="large" name="bar-chart-outline"></ion-icon>
-                            <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns</span>
-                        </div>
+                        <span class="icon-text">
+                            <span class="icon">
+                                <ion-icon size="large" name="bar-chart-outline"></ion-icon>
+                            </span>
+                            <span class="ml-2">Campaigns</span>
+                        </span>
                     </a>
                 </div>
                 <div class="level-item">
                     <a href="{{ url_for('current_sources') }}" class="navbar-item title is-6">
-                        <div class="level">
-                            <ion-icon size="large" name="stats-chart-outline"></ion-icon>
-                            <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds</span>
-                        </div>
+                        <span class="icon-text">
+                            <span class="icon">
+                                <ion-icon size="large" name="stats-chart-outline"></ion-icon>
+                            </span>
+                            <span class="ml-2">SourceIds</span>
+                        </span>
                     </a>
                 </div>
                 <div class="level-item">
                     <a href="{{ url_for('campaigns_rules') }}" class="navbar-item title is-6">
-                        <div class="level">
-                            <ion-icon size="large" name="cog-outline"></ion-icon>
-                            <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns Rules</span>
-                        </div>
+                        <span class="icon-text">
+                            <span class="icon">
+                                <ion-icon size="large" name="cog-outline"></ion-icon>
+                            </span>
+                            <span class="ml-2">Campaigns Rules</span>
+                        </span>
                     </a>
                 </div>
                 <div class="level-item">
                     <a href="{{ url_for('sources_rules') }}" class="navbar-item title is-6">
-                        <div class="level">
-                            <ion-icon size="large" name="cog-outline"></ion-icon>
-                            <span class="is-hidden-mobile" style="margin-left: 10px">SourceIds Rules</span>
-                        </div>
+                        <span class="icon-text">
+                            <span class="icon">
+                                <ion-icon size="large" name="cog-outline"></ion-icon>
+                            </span>
+                            <span class="ml-2">SourceIds Rules</span>
+                        </span>
                     </a>
                 </div>
                 <div class="level-item">
                     <a href="{{ url_for('logs') }}" class="navbar-item title is-6">
-                        <div class="level">
-                            <ion-icon size="large" name="document-text-outline"></ion-icon>
-                            <span class="is-hidden-mobile" style="margin-left: 10px">Rules Logs</span>
-                        </div>
+                        <span class="icon-text">
+                            <span class="icon">
+                                <ion-icon size="large" name="document-text-outline"></ion-icon>
+                            </span>
+                            <span class="ml-2">Rules Logs</span>
+                        </span>
                     </a>
                 </div>
             </div>

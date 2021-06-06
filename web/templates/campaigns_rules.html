@@ -8,8 +8,12 @@
 {% endblock %}
 
 {% block message_header %}
-    <ion-icon size="large" name="list-outline"></ion-icon>
-    <span class="pl-2">Campaigns Rules List</span>
+    <span class="icon-text">
+        <span class="icon">
+            <ion-icon size="large" name="list-outline"></ion-icon>
+        </span>
+        <span class="ml-2">Campaigns Rules List</span>
+    </span>
 {% endblock %}
 
 {% block message_body %}
@@ -17,7 +21,7 @@
         {% if rules %}
             <ol>
                 {% for rule in rules %}
-                    <div class="block subtitle is-5">
+                    <div class="block subtitle is-6">
                         <li>
                             <span>If
                                 <span class="has-text-link">campaign</span>
@@ -52,7 +56,7 @@
                     </div>
                 {% endfor %}
             </ol>
-            {% else %}
+        {% else %}
             <p>No rules here</p>
         {% endif %}
     </div>
@@ -63,9 +67,13 @@
         <aside class="menu">
             <div class="block">
                 <div class="level-left">
-                    <ion-icon class="has-text-link" size="large"
-                              name="cog-outline"></ion-icon>
-                    <span class="subtitle pl-2">Campaign Rules</span>
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon class="has-text-link" size="large"
+                                      name="cog-outline"></ion-icon>
+                        </span>
+                        <span class="subtitle ml-2">Campaign Rules</span>
+                    </span>
                 </div>
                 <hr/>
 
@@ -73,10 +81,12 @@
 
                 <hr/>
                 <a href="{{ url_for('campaigns_add_rule') }}" class="navbar-item title is-6 m-0">
-                    <div class="level">
-                        <ion-icon size="large" name="add-circle-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">Add rule for Campaign</span>
-                    </div>
+                     <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="add-circle-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">Add rule for Campaign</span>
+                    </span>
                 </a>
             </div>
         </aside>

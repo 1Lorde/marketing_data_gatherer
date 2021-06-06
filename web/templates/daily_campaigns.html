@@ -46,12 +46,16 @@
 {% endblock %}
 
 {% block message_header %}
-    <ion-icon size="large" name="filter-outline"></ion-icon>
-    {% if start and end %}
-        <span class="pl-2">Campaigns for {{ start }}</span>
-    {% else %}
-        <span class="pl-2">Campaigns by Days</span>
-    {% endif %}
+    <span class="icon-text">
+        <span class="icon">
+            <ion-icon size="large" name="filter-outline"></ion-icon>
+        </span>
+        {% if start and end %}
+            <span class="ml-2">Campaigns for {{ start }}</span>
+        {% else %}
+            <span class="ml-2">Campaigns by Days</span>
+        {% endif %}
+    </span>
 {% endblock %}
 
 {% block message_body %}
@@ -65,9 +69,13 @@
         <aside class="menu">
             <div class="block">
                 <div class="level-left">
-                    <ion-icon class="has-text-link" size="large"
-                              name="bar-chart-outline"></ion-icon>
-                    <span class="subtitle pl-2">Campaigns</span>
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon class="has-text-link" size="large"
+                                      name="bar-chart-outline"></ion-icon>
+                        </span>
+                        <span class="subtitle ml-2">Campaigns</span>
+                    </span>
                 </div>
 
                 <br/>
@@ -121,46 +129,56 @@
                     <li>
                         <a href="{{ url_for('daily_campaigns', start=yesterday, end=yesterday, ts=ts) }}"
                            class="navbar-item title is-6">
-                            <div class="level-left">
-                                <ion-icon name="today-outline"></ion-icon>
-                                <span class="pl-2">Yesterday</span>
-                            </div>
+                            <span class="icon-text">
+                                <span class="icon">
+                                    <ion-icon name="today-outline"></ion-icon>
+                                </span>
+                                <span class="ml-2">Yesterday</span>
+                            </span>
                         </a>
                     </li>
 
                     <li>
                         <a href="{{ url_for('daily_campaigns', start=three_days, end=three_days, ts=ts) }}"
                            class="navbar-item title is-6">
-                            <div class="level-left">
-                                <ion-icon name="calendar-outline"></ion-icon>
-                                <span class="pl-2">3 days ago</span>
-                            </div>
+                            <span class="icon-text">
+                                <span class="icon">
+                                    <ion-icon name="calendar-outline"></ion-icon>
+                                </span>
+                                <span class="ml-2">3 days ago</span>
+                            </span>
                         </a>
                     </li>
 
                     <li>
                         <a href="{{ url_for('daily_campaigns', start=week, end=week, ts=ts) }}"
                            class="navbar-item title is-6">
-                            <div class="level-left">
-                                <ion-icon name="calendar-outline"></ion-icon>
-                                <span class="pl-2">7 days ago</span>
-                            </div>
+                            <span class="icon-text">
+                                <span class="icon">
+                                    <ion-icon name="calendar-outline"></ion-icon>
+                                </span>
+                                <span class="ml-2">7 days ago</span>
+                            </span>
                         </a>
                     </li>
                 </ul>
 
                 <hr/>
                 <a href="{{ url_for('current_campaigns', ts=ts) }}" class="navbar-item title is-6 m-0">
-                    <div class="level">
-                        <ion-icon size="large" name="pulse-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">Live Campaigns</span>
-                    </div>
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="pulse-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">Live Campaigns</span>
+                    </span>
                 </a>
                 <a href="{{ url_for('campaigns_stats', ts=ts) }}" class="navbar-item title is-6 m-0">
-                    <div class="level">
-                        <ion-icon size="large" name="pie-chart-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns Stats</span>
-                    </div>
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="pie-chart-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">Campaigns Stats</span>
+                    </span>
                 </a>
             </div>
         </aside>

@@ -10,18 +10,47 @@ db = SQLAlchemy(session_options={
 class Campaign(db.Model):
     campaign_id = Column(Integer, primary_key=True)
     name = Column(String)
+    description = Column(String)
     traffic_source = Column(String)
+    binom_source = Column(String)
+    clicks = Column(Integer)
+    binom_clicks = Column(Integer)
+    impressions = Column(Integer)
+    lp_clicks = Column(Integer)
+    ctr = Column(Float)
+    lp_ctr = Column(Float)
+    leads = Column(Integer)
     revenue = Column(Float)
     cost = Column(Float)
     profit = Column(Float)
+    roi = Column(Float)
+    payout = Column(Float)
+    cpc = Column(Float)
+    cpm = Column(Float)
+    epc = Column(Float)
     status = Column(String)
     fetched_at = Column(DateTime)
     fetched_time = synonym('fetched_at')
 
     def __init__(self, name, revenue, traffic_source):
         self.name = name
-        self.revenue = revenue
         self.traffic_source = traffic_source
+        self.binom_source = 'bin.mapletrack.com'
+        self.clicks = 0
+        self.binom_clicks = 0
+        self.impressions = 0
+        self.lp_clicks = 0
+        self.ctr = 0
+        self.lp_ctr = 0
+        self.leads = 0
+        self.cost = 0
+        self.profit = 0
+        self.roi = 0
+        self.payout = 0
+        self.cpc = 0
+        self.cpm = 0
+        self.epc = 0
+        self.revenue = revenue
         self.cost = 0
         self.profit = 0
         self.status = 'undefined'
@@ -32,25 +61,68 @@ class Campaign(db.Model):
 
     def cast_to_daily(self):
         daily = DailyCampaign(self.name, self.revenue, self.traffic_source)
+        daily.binom_source = self.binom_source
+        daily.clicks = self.clicks
+        daily.binom_clicks = self.binom_clicks
+        daily.impressions = self.impressions
+        daily.lp_clicks = self.lp_clicks
+        daily.ctr = self.ctr
+        daily.lp_ctr = self.lp_ctr
+        daily.leads = self.leads
         daily.cost = self.cost
         daily.profit = self.profit
-        daily.fetched_at = self.fetched_at
+        daily.roi = self.roi
+        daily.payout = self.payout
+        daily.cpc = self.cpc
+        daily.cpm = self.cpm
+        daily.epc = self.epc
+        daily.cost = self.cost
+        daily.profit = self.profit
         return daily
 
 
 class DailyCampaign(db.Model):
     campaign_id = Column(Integer, primary_key=True)
     name = Column(String)
+    description = Column(String)
     traffic_source = Column(String)
+    binom_source = Column(String)
+    clicks = Column(Integer)
+    binom_clicks = Column(Integer)
+    impressions = Column(Integer)
+    lp_clicks = Column(Integer)
+    ctr = Column(Float)
+    lp_ctr = Column(Float)
+    leads = Column(Integer)
     revenue = Column(Float)
     cost = Column(Float)
     profit = Column(Float)
+    roi = Column(Float)
+    payout = Column(Float)
+    cpc = Column(Float)
+    cpm = Column(Float)
+    epc = Column(Float)
     fetched_at = Column(DateTime)
 
     def __init__(self, name, revenue, traffic_source):
         self.name = name
-        self.revenue = revenue
         self.traffic_source = traffic_source
+        self.binom_source = 'bin.mapletrack.com'
+        self.clicks = 0
+        self.binom_clicks = 0
+        self.impressions = 0
+        self.lp_clicks = 0
+        self.ctr = 0
+        self.lp_ctr = 0
+        self.leads = 0
+        self.cost = 0
+        self.profit = 0
+        self.roi = 0
+        self.payout = 0
+        self.cpc = 0
+        self.cpm = 0
+        self.epc = 0
+        self.revenue = revenue
         self.cost = 0
         self.profit = 0
 
@@ -63,20 +135,51 @@ class Source(db.Model):
     source_id = Column(Integer, primary_key=True)
     name = Column(String)
     campaign_name = Column(String)
+    description = Column(String)
     traffic_source = Column(String)
+    binom_source = Column(String)
+    clicks = Column(Integer)
+    binom_clicks = Column(Integer)
+    impressions = Column(Integer)
+    lp_clicks = Column(Integer)
+    ctr = Column(Float)
+    lp_ctr = Column(Float)
+    leads = Column(Integer)
     revenue = Column(Float)
     cost = Column(Float)
     profit = Column(Float)
+    roi = Column(Float)
+    payout = Column(Float)
+    cpc = Column(Float)
+    cpm = Column(Float)
+    epc = Column(Float)
+    status = Column(String)
     fetched_at = Column(DateTime)
     fetched_time = synonym('fetched_at')
 
     def __init__(self, name, campaign_name, revenue, traffic_source):
         self.name = name
         self.campaign_name = campaign_name
-        self.revenue = revenue
         self.traffic_source = traffic_source
+        self.binom_source = 'bin.mapletrack.com'
+        self.clicks = 0
+        self.binom_clicks = 0
+        self.impressions = 0
+        self.lp_clicks = 0
+        self.ctr = 0
+        self.lp_ctr = 0
+        self.leads = 0
         self.cost = 0
         self.profit = 0
+        self.roi = 0
+        self.payout = 0
+        self.cpc = 0
+        self.cpm = 0
+        self.epc = 0
+        self.revenue = revenue
+        self.cost = 0
+        self.profit = 0
+        self.status = 'undefined'
 
     def __repr__(self):
         return f"Source (name={self.name}, traffic source={self.traffic_source}, revenue={self.revenue}, cost={self.cost}, profit={self.profit}," \
@@ -84,9 +187,23 @@ class Source(db.Model):
 
     def cast_to_daily(self):
         daily = DailySource(self.name, self.campaign_name, self.revenue, self.traffic_source)
+        daily.binom_source = self.binom_source
+        daily.clicks = self.clicks
+        daily.binom_clicks = self.binom_clicks
+        daily.impressions = self.impressions
+        daily.lp_clicks = self.lp_clicks
+        daily.ctr = self.ctr
+        daily.lp_ctr = self.lp_ctr
+        daily.leads = self.leads
         daily.cost = self.cost
         daily.profit = self.profit
-        daily.fetched_at = self.fetched_at
+        daily.roi = self.roi
+        daily.payout = self.payout
+        daily.cpc = self.cpc
+        daily.cpm = self.cpm
+        daily.epc = self.epc
+        daily.cost = self.cost
+        daily.profit = self.profit
         return daily
 
 
@@ -94,17 +211,46 @@ class DailySource(db.Model):
     source_id = Column(Integer, primary_key=True)
     name = Column(String)
     campaign_name = Column(String)
+    description = Column(String)
     traffic_source = Column(String)
+    binom_source = Column(String)
+    clicks = Column(Integer)
+    binom_clicks = Column(Integer)
+    impressions = Column(Integer)
+    lp_clicks = Column(Integer)
+    ctr = Column(Float)
+    lp_ctr = Column(Float)
+    leads = Column(Integer)
     revenue = Column(Float)
     cost = Column(Float)
     profit = Column(Float)
+    roi = Column(Float)
+    payout = Column(Float)
+    cpc = Column(Float)
+    cpm = Column(Float)
+    epc = Column(Float)
     fetched_at = Column(DateTime)
 
     def __init__(self, name, campaign_name, revenue, traffic_source):
         self.name = name
         self.campaign_name = campaign_name
-        self.revenue = revenue
         self.traffic_source = traffic_source
+        self.binom_source = 'bin.mapletrack.com'
+        self.clicks = 0
+        self.binom_clicks = 0
+        self.impressions = 0
+        self.lp_clicks = 0
+        self.ctr = 0
+        self.lp_ctr = 0
+        self.leads = 0
+        self.cost = 0
+        self.profit = 0
+        self.roi = 0
+        self.payout = 0
+        self.cpc = 0
+        self.cpm = 0
+        self.epc = 0
+        self.revenue = revenue
         self.cost = 0
         self.profit = 0
 

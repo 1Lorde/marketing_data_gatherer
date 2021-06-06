@@ -1,12 +1,11 @@
 import logging
-import os
 import time
 from datetime import datetime, timedelta
 
 import schedule as schedule
 
 from gatherer.utils import set_fetched_at, get_last_fetched, save_data_to_db, remove_data_fetched_at, set_last_fetched, \
-    campaigns_to_daily, sources_to_daily
+    campaigns_to_daily, sources_to_daily, remove_daily_data
 from models.models import db, DailyCampaign, DailySource
 from run_web import app
 from utils.api_utils import ApiUtils
@@ -40,14 +39,15 @@ def live_job():
         save_data_to_db(ungads_campaigns, ungads_sources)
         set_last_fetched(fetched_at)
 
-        logging.debug(ph_campaigns)
-        logging.debug(ph_sources)
-        logging.debug(ungads_campaigns)
-        logging.debug(ungads_sources)
+        logging.debug(f"Push.House campaigns:\n{ph_campaigns}")
+        logging.debug(f"Push.House sources:\n{ph_sources}")
+        logging.debug(f"Ungads campaigns:\n{ungads_campaigns}")
+        logging.debug(f"Ungads sources:\n{ungads_sources}")
 
 
 def check_rules_job():
     with app.test_request_context():
+        db.init_app(app)
         api.check_campaign_rules()
         api.check_source_rules()
 
@@ -59,14 +59,15 @@ def daily_job():
     now = datetime.now()
     yesterday = datetime(now.year, now.month, now.day, 0, 0, 0) - timedelta(1)
 
-    ph_campaigns = api.get_campaigns(ph_id, start_date=yesterday, end_date=yesterday)
-    ph_sources = api.get_sources(ph_campaigns, ph_id, start_date=yesterday, end_date=yesterday)
-
-    ungads_campaigns = api.get_campaigns(ungads_id, start_date=yesterday, end_date=yesterday)
-    ungads_sources = api.get_sources(ungads_campaigns, ungads_id, start_date=yesterday, end_date=yesterday)
-
     with app.test_request_context():
         db.init_app(app)
+
+        ph_campaigns = api.get_campaigns(ph_id, start_date=yesterday, end_date=yesterday)
+        ph_sources = api.get_sources(ph_campaigns, ph_id, start_date=yesterday, end_date=yesterday)
+
+        ungads_campaigns = api.get_campaigns(ungads_id, start_date=yesterday, end_date=yesterday)
+        ungads_sources = api.get_sources(ungads_campaigns, ungads_id, start_date=yesterday, end_date=yesterday)
+
         daily_ph_campaigns = campaigns_to_daily(ph_campaigns)
         daily_ph_sources = sources_to_daily(ph_sources)
 
@@ -89,32 +90,28 @@ def daily_job():
 
 
 def extract_n_days_job(ts_id, days):
-    # with app.test_request_context():
-    #     db.init_app(app)
-    #     remove_daily_data()
-
     for days in range(1, days):
         date = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days)
 
-        logging.debug(f'Extracting campaigns for {date}')
-        campaigns = api.get_campaigns(ts_id, date, date)
-
-        logging.debug(f'Extracting sources for {date}')
-        sources = api.get_sources(campaigns, ts_id, date, date)
-
-        daily_campaigns = campaigns_to_daily(campaigns)
-        daily_sources = sources_to_daily(sources)
-
-        daily_campaigns, daily_sources, fetched_at = \
-            set_fetched_at(daily_campaigns, daily_sources, date)
-
         with app.test_request_context():
             db.init_app(app)
+            logging.debug(f'Extracting campaigns for {date}')
+            campaigns = api.get_campaigns(ts_id, date, date)
+
+            logging.debug(f'Extracting sources for {date}')
+            sources = api.get_sources(campaigns, ts_id, date, date)
+
+            daily_campaigns = campaigns_to_daily(campaigns)
+            daily_sources = sources_to_daily(sources)
+
+            daily_campaigns, daily_sources, fetched_at = \
+                set_fetched_at(daily_campaigns, daily_sources, date)
+
             save_data_to_db(daily_campaigns, daily_sources)
 
         logging.debug(daily_campaigns)
         logging.debug(daily_sources)
-        time.sleep(7)
+        time.sleep(3)
 
 
 if __name__ == '__main__':
@@ -123,8 +120,17 @@ if __name__ == '__main__':
     init_logger()
     init_file_logger()
 
-    schedule.every(1).minutes.do(live_job)
-    schedule.every(3).minutes.do(check_rules_job)
+    # with app.test_request_context():
+    #     db.init_app(app)
+    #     remove_daily_data()
+    #
+    # ph_id = config['traffic_source_ids']['push_house']
+    # ungads_id = config['traffic_source_ids']['ungads']
+    # extract_n_days_job(ph_id, 30)
+    # extract_n_days_job(ungads_id, 30)
+
+    schedule.every(2).minutes.do(live_job)
+    schedule.every(5).minutes.do(check_rules_job)
     schedule.every().day.at("04:00").do(daily_job)
 
     logging.debug('Run data gathering script')

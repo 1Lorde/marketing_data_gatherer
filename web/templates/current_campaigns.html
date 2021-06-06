@@ -46,8 +46,12 @@
 {% endblock %}
 
 {% block message_header %}
-    <ion-icon size="large" name="pulse-outline"></ion-icon>
-    <span class="pl-2">Live Campaigns</span>
+    <span class="icon-text">
+        <span class="icon">
+            <ion-icon size="large" name="pulse-outline"></ion-icon>
+        </span>
+        <span class="ml-2">Live Campaigns</span>
+    </span>
 {% endblock %}
 
 {% block message_body %}
@@ -61,9 +65,13 @@
         <aside class="menu">
             <div class="block">
                 <div class="level-left">
-                    <ion-icon class="has-text-link" size="large"
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon class="has-text-link" size="large"
                               name="bar-chart-outline"></ion-icon>
-                    <span class="subtitle pl-2">Campaigns</span>
+                        </span>
+                        <span class="subtitle ml-2">Campaigns</span>
+                    </span>
                 </div>
 
                 <br/>
@@ -99,16 +107,20 @@
                 <hr/>
                 <a href="{{ url_for('daily_campaigns', start=yesterday, end=yesterday, ts=ts) }}"
                    class="navbar-item title is-6 m-0">
-                    <div class="level">
-                        <ion-icon size="large" name="filter-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns by Days</span>
-                    </div>
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="filter-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">Campaigns by Days</span>
+                    </span>
                 </a>
                 <a href="{{ url_for('campaigns_stats', ts=ts) }}" class="navbar-item title is-6 m-0">
-                    <div class="level">
-                        <ion-icon size="large" name="pie-chart-outline"></ion-icon>
-                        <span class="is-hidden-mobile" style="margin-left: 10px">Campaigns Stats</span>
-                    </div>
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="pie-chart-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">Campaigns Stats</span>
+                    </span>
                 </a>
             </div>
         </aside>

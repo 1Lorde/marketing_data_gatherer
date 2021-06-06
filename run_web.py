@@ -129,15 +129,37 @@ def campaigns_stats():
     campaigns_stats_list = []
     for name in unique_campaigns_names:
         campaign_stat = Campaign(name, 0, 0)
-        campaign_stat.cost = 0
-        campaign_stat.profit = 0
 
         for campaign in campaigns_list:
             if campaign.name == name:
                 campaign_stat.traffic_source = campaign.traffic_source
                 campaign_stat.revenue += campaign.revenue
+                campaign_stat.binom_clicks += campaign.binom_clicks
+                campaign_stat.lp_clicks += campaign.lp_clicks
+                campaign_stat.leads += campaign.leads
+
                 campaign_stat.cost += campaign.cost
-                campaign_stat.profit += campaign.profit
+                campaign_stat.clicks += campaign.clicks
+                campaign_stat.impressions += campaign.impressions
+
+        if campaign_stat.leads != 0:
+            campaign_stat.payout = campaign_stat.revenue / campaign_stat.leads
+
+        campaign_stat.profit = campaign_stat.revenue - campaign_stat.cost
+
+        if campaign_stat.clicks != 0:
+            campaign_stat.cpc = campaign_stat.cost / campaign_stat.clicks
+            campaign_stat.epc = campaign_stat.revenue / campaign_stat.clicks
+
+        if campaign_stat.binom_clicks != 0:
+            campaign_stat.lp_ctr = campaign_stat.lp_clicks / campaign_stat.binom_clicks * 100
+
+        if campaign_stat.cost != 0:
+            campaign_stat.roi = campaign_stat.profit / campaign_stat.cost * 100
+
+        if campaign_stat.impressions != 0:
+            campaign_stat.ctr = campaign_stat.clicks / campaign_stat.impressions * 100
+            campaign_stat.cpm = campaign_stat.cost / campaign_stat.impressions * 1000
 
         campaigns_stats_list.append(campaign_stat)
 
@@ -292,32 +314,57 @@ def sources_stats():
         source_query = source_query.filter_by(traffic_source=ungads_id)
         current_source_query = current_source_query.filter_by(traffic_source=ungads_id)
 
-    source_list = source_query.all()
     current_source_list = current_source_query.all()
-    source_list = source_list + current_source_list
 
-    unique_sources_names = set()
-    [unique_sources_names.add(source.name) for source in source_list if source.name not in unique_sources_names]
-
-    unique_campaigns_names = set()
-    [unique_campaigns_names.add(source.campaign_name) for source in source_list if
-     source.campaign_name not in unique_campaigns_names]
+    unique_names = set()
+    [unique_names.add((source.name, source.campaign_name)) for source in current_source_list if
+     (source.name, source.campaign_name) not in unique_names]
 
     sources_stats_list = []
-    for campaign_name in unique_campaigns_names:
-        for name in unique_sources_names:
-            source_stat = Source(name, campaign_name, 0, 0)
-            source_stat.cost = 0
-            source_stat.profit = 0
+    for names in unique_names:
+        source_stat = Source(names[0], names[1], 0, 0)
 
-            for source in source_list:
-                if source.name == name and source.campaign_name == campaign_name:
-                    source_stat.traffic_source = source.traffic_source
-                    source_stat.revenue += source.revenue
-                    source_stat.cost += source.cost
-                    source_stat.profit += source.profit
+        source_list = source_query.filter(
+            and_(DailySource.name == names[0],
+                 DailySource.campaign_name == names[1])).all()
+        current_source_list = current_source_query.filter(
+            and_(Source.name == names[0],
+                 Source.campaign_name == names[1])).all()
+        source_list = source_list + current_source_list
 
-            sources_stats_list.append(source_stat)
+        for source in source_list:
+            source_stat.traffic_source = source.traffic_source
+            source_stat.revenue += source.revenue
+            source_stat.binom_clicks += source.binom_clicks
+            source_stat.lp_clicks += source.lp_clicks
+            source_stat.leads += source.leads
+
+            source_stat.cost += source.cost
+            source_stat.clicks += source.clicks
+            source_stat.impressions += source.impressions
+
+            if source_stat.leads != 0:
+                source_stat.payout = source_stat.revenue / source_stat.leads
+
+            source_stat.profit = source_stat.revenue - source_stat.cost
+
+            if source_stat.clicks != 0:
+                source_stat.cpc = source_stat.cost / source_stat.clicks
+                source_stat.epc = source_stat.revenue / source_stat.clicks
+
+            if source_stat.binom_clicks != 0:
+                source_stat.lp_ctr = source_stat.lp_clicks / source_stat.binom_clicks * 100
+
+            if source_stat.cost != 0:
+                source_stat.roi = source_stat.profit / source_stat.cost * 100
+
+            if source_stat.impressions != 0:
+                source_stat.ctr = source_stat.clicks / source_stat.impressions * 100
+                source_stat.cpm = source_stat.cost / source_stat.impressions * 1000
+
+        sources_stats_list.append(source_stat)
+
+    sources_stats_list.sort(key=lambda x: x.campaign_name)
 
     if len(sources_stats_list) == 0:
         return render_empty_sources('sources_stats.html', ts_arg)
@@ -466,9 +513,17 @@ def sources_delete_rule(rule_id):
 @app.route('/logs', methods=['GET'])
 def logs():
     dir_list = os.listdir('logs')
-    dir_list.sort()
+    dir_list.remove('rules.log')
+
+    dir_list.sort(reverse=True)
 
     logs_data = []
+
+    with open('logs/rules.log', 'r') as f:
+        log = f.readlines()
+        log = list(reversed(log))
+        logs_data.append(log)
+
     for log_file in dir_list:
         try:
             with open('logs/' + log_file, 'r') as f:

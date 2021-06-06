@@ -9,10 +9,10 @@ traffic_source_ids:
 
 binom_urls:
   ph_campaigns: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=29&date=12&group1=282&group2=1&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
-  ph_sources: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=29&date=12&group1=282&group2=27&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
+  ph_sources: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=29&date=12&group1=282&group2=27&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00&val_page=All
 
   ungads_campaigns: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=33&date=12&group1=288&group2=1&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
-  ungads_sources: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=33&date=12&group1=288&group2=27&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
+  ungads_sources: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=33&date=12&group1=288&group2=27&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00&val_page=All
 
 push_house_urls:
   stats: https://push.house/api/statistics/
