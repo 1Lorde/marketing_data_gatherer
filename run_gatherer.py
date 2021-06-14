@@ -6,7 +6,7 @@ import schedule as schedule
 
 from gatherer.utils import set_fetched_at, get_last_fetched, save_data_to_db, remove_data_fetched_at, set_last_fetched, \
     campaigns_to_daily, sources_to_daily, remove_daily_data
-from models.models import db, DailyCampaign, DailySource
+from models.models import db, DailyCampaign, DailySource, Binom, TrafficSource
 from run_web import app
 from utils.api_utils import ApiUtils
 from utils.utils import read_config, init_logger, init_file_logger
@@ -16,33 +16,29 @@ config = None
 
 
 def live_job():
-    ph_id = config['traffic_source_ids']['push_house']
-    ungads_id = config['traffic_source_ids']['ungads']
-
     with app.test_request_context():
         db.init_app(app)
 
-        ph_campaigns = api.get_campaigns(ph_id)
-        ph_sources = api.get_sources(ph_campaigns, ph_id)
-
-        ungads_campaigns = api.get_campaigns(ungads_id)
-        ungads_sources = api.get_sources(ungads_campaigns, ungads_id)
-
         now = datetime.now()
-        ph_campaigns, ph_sources, fetched_at = set_fetched_at(ph_campaigns, ph_sources, now)
-        ungads_campaigns, ungads_sources, fetched_at = set_fetched_at(ungads_campaigns, ungads_sources, now)
+        fetched_campaigns = []
+        fetched_sources = []
+
+        binoms = Binom.query.all()
+        for binom in binoms:
+            ts_list = TrafficSource.query.filter_by(binom_id=binom.id).all()
+            for ts in ts_list:
+                campaigns = api.get_campaigns(ts, binom)
+                sources = api.get_sources(campaigns, ts, binom)
+                campaigns, sources, fetched_at = set_fetched_at(campaigns, sources, now)
+                fetched_campaigns += campaigns
+                fetched_sources += sources
+                logging.debug(f"Campaigns ({binom.name}, {ts.binom_ts_id}):\n{campaigns}")
+                logging.debug(f"Sources({binom.name}, {ts.binom_ts_id}):\n{sources}")
 
         last_fetched_at = get_last_fetched()
-
         remove_data_fetched_at(last_fetched_at)
-        save_data_to_db(ph_campaigns, ph_sources)
-        save_data_to_db(ungads_campaigns, ungads_sources)
+        save_data_to_db(fetched_campaigns, fetched_sources)
         set_last_fetched(fetched_at)
-
-        logging.debug(f"Push.House campaigns:\n{ph_campaigns}")
-        logging.debug(f"Push.House sources:\n{ph_sources}")
-        logging.debug(f"Ungads campaigns:\n{ungads_campaigns}")
-        logging.debug(f"Ungads sources:\n{ungads_sources}")
 
 
 def check_rules_job():
@@ -53,53 +49,47 @@ def check_rules_job():
 
 
 def daily_job():
-    ph_id = config['traffic_source_ids']['push_house']
-    ungads_id = config['traffic_source_ids']['ungads']
-
     now = datetime.now()
     yesterday = datetime(now.year, now.month, now.day, 0, 0, 0) - timedelta(1)
+    fetched_campaigns = []
+    fetched_sources = []
 
     with app.test_request_context():
         db.init_app(app)
 
-        ph_campaigns = api.get_campaigns(ph_id, start_date=yesterday, end_date=yesterday)
-        ph_sources = api.get_sources(ph_campaigns, ph_id, start_date=yesterday, end_date=yesterday)
+        binoms = Binom.query.all()
+        for binom in binoms:
+            ts_list = TrafficSource.query.filter_by(binom_id=binom.id).all()
+            for ts in ts_list:
+                campaigns = api.get_campaigns(ts, binom, start_date=yesterday, end_date=yesterday)
+                sources = api.get_sources(campaigns, ts, binom, start_date=yesterday, end_date=yesterday)
 
-        ungads_campaigns = api.get_campaigns(ungads_id, start_date=yesterday, end_date=yesterday)
-        ungads_sources = api.get_sources(ungads_campaigns, ungads_id, start_date=yesterday, end_date=yesterday)
+                daily_campaigns = campaigns_to_daily(campaigns)
+                daily_sources = sources_to_daily(sources)
 
-        daily_ph_campaigns = campaigns_to_daily(ph_campaigns)
-        daily_ph_sources = sources_to_daily(ph_sources)
+                fetched_campaigns += daily_campaigns
+                fetched_sources += daily_sources
 
-        daily_ungads_campaigns = campaigns_to_daily(ungads_campaigns)
-        daily_ungads_sources = sources_to_daily(ungads_sources)
+                daily_campaigns, daily_sources, fetched_at = set_fetched_at(daily_campaigns, daily_sources, yesterday)
 
-        daily_ph_campaigns, daily_ph_sources, fetched_at = \
-            set_fetched_at(daily_ph_campaigns, daily_ph_sources, yesterday)
-
-        daily_ungads_campaigns, daily_ungads_sources, fetched_at = \
-            set_fetched_at(daily_ungads_campaigns, daily_ungads_sources, yesterday)
-
-        save_data_to_db(daily_ph_campaigns, daily_ph_sources)
-        save_data_to_db(daily_ungads_campaigns, daily_ungads_sources)
-
+        save_data_to_db(daily_campaigns, daily_sources)
         last_day = yesterday - timedelta(30)
         DailyCampaign.query.filter_by(fetched_at=last_day).delete()
         DailySource.query.filter_by(fetched_at=last_day).delete()
         db.session.commit()
 
 
-def extract_n_days_job(ts_id, days):
+def extract_n_days_job(ts, binom, days):
     for days in range(1, days):
         date = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days)
 
         with app.test_request_context():
             db.init_app(app)
             logging.debug(f'Extracting campaigns for {date}')
-            campaigns = api.get_campaigns(ts_id, date, date)
+            campaigns = api.get_campaigns(ts, binom, date, date)
 
             logging.debug(f'Extracting sources for {date}')
-            sources = api.get_sources(campaigns, ts_id, date, date)
+            sources = api.get_sources(campaigns, ts, binom, date, date)
 
             daily_campaigns = campaigns_to_daily(campaigns)
             daily_sources = sources_to_daily(sources)
@@ -122,12 +112,13 @@ if __name__ == '__main__':
 
     # with app.test_request_context():
     #     db.init_app(app)
-    #     remove_daily_data()
+    ##     remove_daily_data()
     #
-    # ph_id = config['traffic_source_ids']['push_house']
-    # ungads_id = config['traffic_source_ids']['ungads']
-    # extract_n_days_job(ph_id, 30)
-    # extract_n_days_job(ungads_id, 30)
+    #     binoms = Binom.query.all()
+    #     for binom in binoms:
+    #         ts_list = TrafficSource.query.filter_by(binom_id=binom.id).all()
+    #         for ts in ts_list:
+    #             extract_n_days_job(ts, binom, 30)
 
     schedule.every(2).minutes.do(live_job)
     schedule.every(5).minutes.do(check_rules_job)

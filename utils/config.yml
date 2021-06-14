@@ -1,18 +1,9 @@
-api_keys:
-  binom: 130000018e09719a5c63999714101de82c18286d
-  push_house: aed89d56233d3afa4655852324cdf12b
-  ungads: 799162ae1286e10642fdae41a230221e
-
-traffic_source_ids:
-  push_house: 29
-  ungads: 33
-
 binom_urls:
-  ph_campaigns: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=29&date=12&group1=282&group2=1&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
-  ph_sources: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=29&date=12&group1=282&group2=27&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00&val_page=All
-
-  ungads_campaigns: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=33&date=12&group1=288&group2=1&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00
-  ungads_sources: https://bin.mapletrack.com/aaa.php?page=Stats&ts_id=33&date=12&group1=288&group2=27&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00&val_page=All
+  traffic_sources: '[BINOM_URL]aaa.php?page=Traffic_Sources'
+  ph_campaigns: '[BINOM_URL]aaa.php?page=Stats&ts_id=[TS_ID]&date=12&group1=282&group2=1&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00'
+  ph_sources: '[BINOM_URL]aaa.php?page=Stats&ts_id=[TS_ID]&date=12&group1=282&group2=27&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00&val_page=All'
+  ungads_campaigns: '[BINOM_URL]aaa.php?page=Stats&ts_id=[TS_ID]&date=12&group1=288&group2=1&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00'
+  ungads_sources: '[BINOM_URL]aaa.php?page=Stats&ts_id=[TS_ID]&date=12&group1=288&group2=27&group3=1&date_s=[DATE_S]&date_e=[DATE_E]&timezone=+3:00&val_page=All'
 
 push_house_urls:
   stats: https://push.house/api/statistics/

@@ -77,3 +77,23 @@ def get_rule_fields():
     }
 
     return rule
+
+
+def get_binom_fields():
+    binom = {
+        'name': request.form.get('name'),
+        'url': request.form.get('url'),
+        'api_key': request.form.get('api_key'),
+    }
+
+    return binom
+
+
+def get_ts_credentials_fields():
+    creds = {
+        'name': request.form.get('name'),
+        'url': request.form.get('url'),
+        'api_key': request.form.get('api_key'),
+    }
+
+    return creds

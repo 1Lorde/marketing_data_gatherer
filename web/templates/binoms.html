@@ -1,0 +1,117 @@
+{% extends "message.html" %}
+
+{% block panel %}
+    <div class="level"></div>
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
+{% block message_header %}
+    <span class="icon-text">
+        <span class="icon">
+            <ion-icon size="large" name="cube-outline"></ion-icon>
+        </span>
+        <span class="ml-2">Binoms</span>
+    </span>
+{% endblock %}
+
+{% block message_body %}
+    <div class="container">
+        {% if binoms %}
+            {% for binom in binoms %}
+                <div class="block box subtitle is-6 pl-5 pr-5">
+                    <a class="button is-small is-danger is-pulled-right"
+                       href="{{ url_for('delete_binom', binom_id=binom.id) }}">
+                        <ion-icon name="trash-outline"></ion-icon>
+                    </a>
+                    <p class="title is-5 pl-5"><strong>{{ binom.name }}</strong></p>
+                    <hr/>
+                    <div class="level">
+                        <div class="level-item">
+                            <span>URL:</span>
+                            <span class="tag is-medium is-rounded is-info is-light ml-2">{{ binom.url }}</span>
+                        </div>
+                        <div class="level-item">
+                            <span>API Key:</span>
+                            <p class="tag is-medium is-rounded is-success is-light ml-2">{{ binom.api_key }}</p>
+                        </div>
+                    </div>
+
+                    <hr/>
+                    <div class="ml-5 mt-5">
+                        {% for ts in traffic_sources %}
+                            {% if ts.binom_id == binom.id %}
+                                <div class="block">
+                                    <form method="post" id="form_{{ ts.id }}">
+                                        <input type="hidden" name="binom_id" value="{{ binom.id }}">
+                                        <input type="hidden" name="ts_id" value="{{ ts.id }}">
+                                        <div class="subtitle is-6">
+                                            <span class="tag is-rounded is-warning">ID: {{ ts.binom_ts_id }}</span>
+                                            <span class="ml-2">{{ ts.name }}</span>
+                                            <span class="tag is-light ml-3">{{ ts.url }}</span>
+                                            <span class="control is-size-7">
+                                            <div class="select">
+                                                <select onchange="this.form.submit()" name="credentials">
+                                                    {% if ts.credentials_id == -1 %}
+                                                        <option selected disabled>No credentials</option>
+                                                    {% endif %}
+
+                                                    {% for creds in creds_list %}
+                                                        {% if ts.credentials_id == creds.id %}
+                                                            <option selected
+                                                                    value="{{ creds.id }}">{{ creds.name }}</option>
+                                                        {% else %}
+                                                            <option value="{{ creds.id }}">{{ creds.name }}</option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </span>
+                                        </div>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div id="save_button" style="display: none;">
+
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No binoms here</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block side_menu %}
+    <div class="box">
+        <aside class="menu">
+            <div class="block">
+                <div class="level-left">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon class="has-text-link" size="large"
+                                      name="cube-outline"></ion-icon>
+                        </span>
+                        <span class="subtitle ml-2">Binoms</span>
+                    </span>
+                </div>
+                <hr/>
+                <p class="heading is-size-6 has-text-centered">Binoms List</p>
+                <hr/>
+                <a href="{{ url_for('add_binom') }}" class="navbar-item title is-6 m-0">
+                     <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="add-circle-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">Add Binom</span>
+                    </span>
+                </a>
+            </div>
+        </aside>
+    </div>
+{% endblock %}
+
+

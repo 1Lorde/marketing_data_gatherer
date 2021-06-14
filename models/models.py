@@ -35,7 +35,7 @@ class Campaign(db.Model):
     def __init__(self, name, revenue, traffic_source):
         self.name = name
         self.traffic_source = traffic_source
-        self.binom_source = 'bin.mapletrack.com'
+        self.binom_source = 'undefined'
         self.clicks = 0
         self.binom_clicks = 0
         self.impressions = 0
@@ -161,7 +161,7 @@ class Source(db.Model):
         self.name = name
         self.campaign_name = campaign_name
         self.traffic_source = traffic_source
-        self.binom_source = 'bin.mapletrack.com'
+        self.binom_source = 'undefined'
         self.clicks = 0
         self.binom_clicks = 0
         self.impressions = 0
@@ -332,3 +332,55 @@ class PausedCampaign(db.Model):
 
     def __repr__(self):
         return f"PausedCampaign (campaign_name={self.campaign_name}, traffic source={self.traffic_source})"
+
+
+class Binom(db.Model):
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    url = Column(String)
+    api_key = Column(String)
+
+    def __init__(self, name, url, api_key):
+        self.name = name
+        self.url = url
+        self.api_key = api_key
+
+    def __repr__(self):
+        return f"Binom (name={self.name}, url={self.url})"
+
+
+class TrafficSource(db.Model):
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    url = Column(String)
+    binom_ts_id = Column(String)
+
+    binom_id = db.Column(db.Integer, db.ForeignKey('binom.id'), nullable=False)
+    binom = db.relationship('Binom', backref=db.backref('templates', lazy=True))
+
+    credentials_id = db.Column(db.Integer, db.ForeignKey('traffic_source_credentials.id'), nullable=False)
+    credentials = db.relationship('TrafficSourceCredentials', backref=db.backref('templates', lazy=True))
+
+    def __init__(self, name, binom_ts_id, binom_id, credentials_id):
+        self.name = name
+        self.binom_ts_id = binom_ts_id
+        self.binom_id = binom_id
+        self.credentials_id = credentials_id
+
+    def __repr__(self):
+        return f"TrafficSource (name={self.name}, url={self.url}, binom_ts_id={self.binom_ts_id}, binom={self.binom.name})"
+
+
+class TrafficSourceCredentials(db.Model):
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    url = Column(String)
+    api_key = Column(String)
+
+    def __init__(self, name, url, api_key):
+        self.name = name
+        self.url = url
+        self.api_key = api_key
+
+    def __repr__(self):
+        return f"TrafficSourceCredentials (name={self.name}, url={self.url}, api_key={self.api_key})"

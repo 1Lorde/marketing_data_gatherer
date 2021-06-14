@@ -7,12 +7,12 @@ from sqlalchemy import and_
 from sqlalchemy_utils import database_exists
 
 from models.models import db, Campaign, Source, DailyCampaign, DailySource, \
-    CampaignRule, SourceRule
+    CampaignRule, SourceRule, Binom, TrafficSource, TrafficSourceCredentials
 from utils.api_utils import ApiUtils
 from utils.rules_utils import set_campaign_rule_fields, save_rule_to_db, set_source_rule_fields
 from utils.utils import read_config, init_logger
 from web.service import paginate_data, get_pagination_metadata_from_query, get_path_args, render_empty_campaigns, \
-    render_empty_sources, get_rule_fields
+    render_empty_sources, get_rule_fields, get_binom_fields, get_ts_credentials_fields
 from web.tables import CampaignTable, SourceTable, SourceStatsTable, DailyCampaignTable, CampaignStatsTable, \
     DailySourceTable
 
@@ -55,11 +55,12 @@ def current_campaigns():
              Campaign.fetched_at <= today_end))
 
     if ts_arg == 'push_house':
-        ph_id = config['traffic_source_ids']['push_house']
-        campaign_query = campaign_query.filter_by(traffic_source=ph_id)
+        traffic_sources = TrafficSource.query.filter_by(url='https://push.house/').all()
     else:
-        ungads_id = config['traffic_source_ids']['ungads']
-        campaign_query = campaign_query.filter_by(traffic_source=ungads_id)
+        traffic_sources = TrafficSource.query.filter_by(url='https://ungads.com/').all()
+
+    traffic_sources = [ts.binom_ts_id for ts in traffic_sources]
+    campaign_query = campaign_query.filter(Campaign.traffic_source.in_(traffic_sources))
 
     pagination_metadata = get_pagination_metadata_from_query(page_arg, campaign_query)
     campaigns_list = paginate_data(pagination_metadata, campaign_query)
@@ -111,13 +112,12 @@ def campaigns_stats():
                  DailyCampaign.fetched_at <= yesterday))
 
     if ts_arg == 'push_house':
-        ph_id = config['traffic_source_ids']['push_house']
-        campaign_query = campaign_query.filter_by(traffic_source=ph_id)
-        current_campaign_query = current_campaign_query.filter_by(traffic_source=ph_id)
+        traffic_sources = TrafficSource.query.filter_by(url='https://push.house/').all()
     else:
-        ungads_id = config['traffic_source_ids']['ungads']
-        campaign_query = campaign_query.filter_by(traffic_source=ungads_id)
-        current_campaign_query = current_campaign_query.filter_by(traffic_source=ungads_id)
+        traffic_sources = TrafficSource.query.filter_by(url='https://ungads.com/').all()
+
+    traffic_sources = [ts.binom_ts_id for ts in traffic_sources]
+    campaign_query = campaign_query.filter(DailyCampaign.traffic_source.in_(traffic_sources))
 
     campaigns_list = campaign_query.all()
     current_campaigns_list = current_campaign_query.all()
@@ -132,6 +132,9 @@ def campaigns_stats():
 
         for campaign in campaigns_list:
             if campaign.name == name:
+                if campaign_stat.binom_source == 'undefined':
+                    campaign_stat.binom_source = campaign.binom_source
+
                 campaign_stat.traffic_source = campaign.traffic_source
                 campaign_stat.revenue += campaign.revenue
                 campaign_stat.binom_clicks += campaign.binom_clicks
@@ -213,11 +216,12 @@ def daily_campaigns():
                  DailyCampaign.fetched_at <= yesterday))
 
     if ts_arg == 'push_house':
-        ph_id = config['traffic_source_ids']['push_house']
-        campaign_query = campaign_query.filter_by(traffic_source=ph_id)
+        traffic_sources = TrafficSource.query.filter_by(url='https://push.house/').all()
     else:
-        ungads_id = config['traffic_source_ids']['ungads']
-        campaign_query = campaign_query.filter_by(traffic_source=ungads_id)
+        traffic_sources = TrafficSource.query.filter_by(url='https://ungads.com/').all()
+
+    traffic_sources = [ts.binom_ts_id for ts in traffic_sources]
+    campaign_query = campaign_query.filter(DailyCampaign.traffic_source.in_(traffic_sources))
 
     pagination_metadata = get_pagination_metadata_from_query(page_arg, campaign_query)
     campaigns_list = paginate_data(pagination_metadata, campaign_query)
@@ -249,11 +253,12 @@ def current_sources():
              Source.fetched_at <= today_end))
 
     if ts_arg == 'push_house':
-        ph_id = config['traffic_source_ids']['push_house']
-        source_query = source_query.filter_by(traffic_source=ph_id)
+        traffic_sources = TrafficSource.query.filter_by(url='https://push.house/').all()
     else:
-        ungads_id = config['traffic_source_ids']['ungads']
-        source_query = source_query.filter_by(traffic_source=ungads_id)
+        traffic_sources = TrafficSource.query.filter_by(url='https://ungads.com/').all()
+
+    traffic_sources = [ts.binom_ts_id for ts in traffic_sources]
+    source_query = source_query.filter(Source.traffic_source.in_(traffic_sources))
 
     pagination_metadata = get_pagination_metadata_from_query(page_arg, source_query)
     source_list = paginate_data(pagination_metadata, source_query)
@@ -306,18 +311,19 @@ def sources_stats():
                  DailySource.fetched_at <= yesterday))
 
     if ts_arg == 'push_house':
-        ph_id = config['traffic_source_ids']['push_house']
-        source_query = source_query.filter_by(traffic_source=ph_id)
-        current_source_query = current_source_query.filter_by(traffic_source=ph_id)
+        traffic_sources = TrafficSource.query.filter_by(url='https://push.house/').all()
     else:
-        ungads_id = config['traffic_source_ids']['ungads']
-        source_query = source_query.filter_by(traffic_source=ungads_id)
-        current_source_query = current_source_query.filter_by(traffic_source=ungads_id)
+        traffic_sources = TrafficSource.query.filter_by(url='https://ungads.com/').all()
 
+    traffic_sources = [ts.binom_ts_id for ts in traffic_sources]
+    source_query = source_query.filter(DailySource.traffic_source.in_(traffic_sources))
+
+    sources_list = source_query.all()
     current_source_list = current_source_query.all()
+    sources_list = sources_list + current_source_list
 
     unique_names = set()
-    [unique_names.add((source.name, source.campaign_name)) for source in current_source_list if
+    [unique_names.add((source.name, source.campaign_name)) for source in sources_list if
      (source.name, source.campaign_name) not in unique_names]
 
     sources_stats_list = []
@@ -333,6 +339,9 @@ def sources_stats():
         source_list = source_list + current_source_list
 
         for source in source_list:
+            if source_stat.binom_source == 'undefined':
+                source_stat.binom_source = source.binom_source
+
             source_stat.traffic_source = source.traffic_source
             source_stat.revenue += source.revenue
             source_stat.binom_clicks += source.binom_clicks
@@ -414,11 +423,12 @@ def daily_sources():
                  DailySource.fetched_at <= yesterday))
 
     if ts_arg == 'push_house':
-        ph_id = config['traffic_source_ids']['push_house']
-        sources_query = sources_query.filter_by(traffic_source=ph_id)
+        traffic_sources = TrafficSource.query.filter_by(url='https://push.house/').all()
     else:
-        ungads_id = config['traffic_source_ids']['ungads']
-        sources_query = sources_query.filter_by(traffic_source=ungads_id)
+        traffic_sources = TrafficSource.query.filter_by(url='https://ungads.com/').all()
+
+    traffic_sources = [ts.binom_ts_id for ts in traffic_sources]
+    sources_query = sources_query.filter(DailySource.traffic_source.in_(traffic_sources))
 
     pagination_metadata = get_pagination_metadata_from_query(page_arg, sources_query)
     sources_list = paginate_data(pagination_metadata, sources_query)
@@ -536,6 +546,91 @@ def logs():
     logs_data = [item for sublist in logs_data for item in sublist]
     ' '.join(logs_data)
     return render_template('logs.html', logs=logs_data)
+
+
+@app.route('/binoms', methods=['GET', 'POST'])
+def binoms():
+    if request.method == 'POST':
+        ts_id = request.form.get('ts_id')
+        credentials_id = request.form.get('credentials')
+
+        ts = TrafficSource.query.filter_by(id=ts_id).first()
+        ts.credentials_id = credentials_id
+        db.session.add(ts)
+        db.session.commit()
+
+        return redirect(url_for('binoms'))
+
+    binoms_list = Binom.query.all()
+    ts_list = TrafficSource.query.all()
+    creds_list = TrafficSourceCredentials.query.all()
+    return render_template('binoms.html',
+                           binoms=binoms_list,
+                           traffic_sources=ts_list,
+                           creds_list=creds_list)
+
+
+@app.route('/binoms/add', methods=['GET', 'POST'])
+def add_binom():
+    if request.method == 'POST':
+        binom_dict = get_binom_fields()
+        binom = Binom(binom_dict.get('name'), binom_dict.get('url'), binom_dict.get('api_key'))
+        db.session.add(binom)
+        db.session.commit()
+
+        binom = Binom.query.filter_by(name=binom.name, url=binom.url, api_key=binom.api_key).first()
+        traffic_sources = api.get_binom_traffic_sources(binom)
+        for ts in traffic_sources:
+            db.session.add(ts)
+
+        db.session.commit()
+        return redirect(url_for('binoms'))
+
+    return render_template('add_binom.html')
+
+
+@app.route('/binoms/delete/<binom_id>', methods=['GET', 'POST'])
+def delete_binom(binom_id):
+    deleted_binom = Binom.query.filter_by(id=binom_id).first()
+    if request.method == 'POST':
+        db.session.delete(deleted_binom)
+        db.session.commit()
+        return redirect(url_for('binoms'))
+
+    return render_template('delete_confirm.html',
+                           message_title="Removing Binom",
+                           message="Are you really want to delete Binom " + deleted_binom.name + "?")
+
+
+@app.route('/ts_credentials', methods=['GET'])
+def ts_credentials():
+    creds_list = TrafficSourceCredentials.query.all()
+    return render_template('ts_credentials.html', creds_list=creds_list)
+
+
+@app.route('/ts_credentials/add', methods=['GET', 'POST'])
+def add_ts_credentials():
+    if request.method == 'POST':
+        creds_dict = get_ts_credentials_fields()
+        creds = TrafficSourceCredentials(creds_dict.get('name'), creds_dict.get('url'), creds_dict.get('api_key'))
+        db.session.add(creds)
+        db.session.commit()
+        return redirect(url_for('ts_credentials'))
+
+    return render_template('add_ts_credentials.html')
+
+
+@app.route('/ts_credentials/delete/<creds_id>', methods=['GET', 'POST'])
+def delete_ts_credentials(creds_id):
+    deleted_creds = TrafficSourceCredentials.query.filter_by(id=creds_id).first()
+    if request.method == 'POST':
+        db.session.delete(deleted_creds)
+        db.session.commit()
+        return redirect(url_for('ts_credentials'))
+
+    return render_template('delete_confirm.html',
+                           message_title="Removing TrafficSource Credentials",
+                           message="Are you really want to delete credentials for " + deleted_creds.url + "?")
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from models.models import db, Campaign, Source, DailyCampaign, DailySource
+from models.models import db, Campaign, Source, DailyCampaign, DailySource, TrafficSource
 
 
 def set_fetched_at(campaigns, sources, fetched_at):
@@ -70,3 +70,17 @@ def sources_to_daily(sources):
         daily.append(source.cast_to_daily())
 
     return daily
+
+
+def is_push_house(ts: TrafficSource):
+    if 'push.house' in ts.url:
+        return True
+    else:
+        return False
+
+
+def is_ungads(ts: TrafficSource):
+    if 'ungads' in ts.url:
+        return True
+    else:
+        return False

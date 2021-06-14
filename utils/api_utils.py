@@ -7,8 +7,9 @@ import requests
 from requests import HTTPError
 from sqlalchemy.sql.expression import and_
 
+from gatherer.utils import is_push_house, is_ungads
 from models.models import Campaign, Source, DailyCampaign, CampaignRule, DailySource, SourceRule, db, PausedSource, \
-    PausedCampaign
+    PausedCampaign, Binom, TrafficSource, TrafficSourceCredentials
 from utils.rules_utils import get_comparison_operator, get_campaign_action, get_source_action
 
 
@@ -16,11 +17,13 @@ class ApiUtils:
     def __init__(self, config):
         self.config = config
 
-    def get_binom_campaigns_url(self, ts_id, start_date=None, end_date=None):
-        if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+    def get_binom_campaigns_url(self, ts: TrafficSource, binom: Binom, start_date=None, end_date=None):
+        if is_push_house(ts):
             campaigns_url = self.config['binom_urls']['ph_campaigns']
-        else:
+        elif is_ungads(ts):
             campaigns_url = self.config['binom_urls']['ungads_campaigns']
+        else:
+            return None
 
         if start_date and end_date:
             start_date = start_date.strftime("%Y-%m-%d")
@@ -33,30 +36,29 @@ class ApiUtils:
             campaigns_url = campaigns_url.replace('[DATE_S]', current_date)
             campaigns_url = campaigns_url.replace('[DATE_E]', current_date)
 
-        binom_api_key = self.config["api_keys"]["binom"]
-        campaigns_url = f'{campaigns_url}&api_key={binom_api_key}'
+        campaigns_url = campaigns_url.replace('[TS_ID]', ts.binom_ts_id)
+        campaigns_url = campaigns_url.replace('[BINOM_URL]', binom.url)
+        campaigns_url = f'{campaigns_url}&api_key={binom.api_key}'
 
         return campaigns_url
 
-    def get_push_house_campaign_url(self, campaign_name, start_date=None, end_date=None):
+    def get_push_house_campaign_url(self, campaign_name, ts: TrafficSource, start_date=None, end_date=None):
         stats_url = self.config['push_house_urls']['stats']
-        push_house_api_key = self.config["api_keys"]["push_house"]
 
         if start_date and end_date:
             start_date = start_date.strftime("%Y-%m-%d")
             end_date = end_date.strftime("%Y-%m-%d")
 
-            stats_url = f'{stats_url}{push_house_api_key}/date/{start_date}/{end_date}/{campaign_name}'
+            stats_url = f'{stats_url}{ts.credentials.api_key}/date/{start_date}/{end_date}/{campaign_name}'
         else:
             current_date = datetime.now().strftime("%Y-%m-%d")
-            stats_url = f'{stats_url}{push_house_api_key}/date/{current_date}/{current_date}/{campaign_name}'
+            stats_url = f'{stats_url}{ts.credentials.api_key}/date/{current_date}/{current_date}/{campaign_name}'
 
         return stats_url
 
-    def get_ungads_campaign_url(self, campaign_name, start_date=None, end_date=None):
+    def get_ungads_campaign_url(self, campaign_name, ts: TrafficSource, start_date=None, end_date=None):
         stats_url = self.config['ungads_urls']['stats']
-        ungads_api_key = self.config["api_keys"]["ungads"]
-        stats_url = stats_url.replace('[API_KEY]', ungads_api_key)
+        stats_url = stats_url.replace('[API_KEY]', ts.credentials.api_key)
 
         if start_date and end_date:
             start_date = start_date.strftime("%Y-%m-%d")
@@ -68,11 +70,13 @@ class ApiUtils:
 
         return stats_url
 
-    def get_binom_sources_url(self, ts_id, start_date=None, end_date=None):
-        if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+    def get_binom_sources_url(self, ts: TrafficSource, binom: Binom, start_date=None, end_date=None):
+        if is_push_house(ts):
             sources_url = self.config['binom_urls']['ph_sources']
-        else:
+        elif is_ungads(ts):
             sources_url = self.config['binom_urls']['ungads_sources']
+        else:
+            return None
 
         if start_date and end_date:
             start_date = start_date.strftime("%Y-%m-%d")
@@ -85,30 +89,29 @@ class ApiUtils:
             sources_url = sources_url.replace('[DATE_S]', current_date)
             sources_url = sources_url.replace('[DATE_E]', current_date)
 
-        binom_api_key = self.config["api_keys"]["binom"]
-        sources_url = f'{sources_url}&api_key={binom_api_key}'
+        sources_url = sources_url.replace('[TS_ID]', ts.binom_ts_id)
+        sources_url = sources_url.replace('[BINOM_URL]', binom.url)
+        sources_url = f'{sources_url}&api_key={binom.api_key}'
 
         return sources_url
 
-    def get_push_house_sources_url(self, campaign_name, start_date=None, end_date=None):
+    def get_push_house_sources_url(self, campaign_name, ts: TrafficSource, start_date=None, end_date=None):
         stats_url = self.config['push_house_urls']['stats']
-        push_house_api_key = self.config["api_keys"]["push_house"]
 
         if start_date and end_date:
             start_date = start_date.strftime("%Y-%m-%d")
             end_date = end_date.strftime("%Y-%m-%d")
 
-            stats_url = f'{stats_url}{push_house_api_key}/subacc/{start_date}/{end_date}/{campaign_name}'
+            stats_url = f'{stats_url}{ts.credentials.api_key}/subacc/{start_date}/{end_date}/{campaign_name}'
         else:
             current_date = datetime.now().strftime("%Y-%m-%d")
-            stats_url = f'{stats_url}{push_house_api_key}/subacc/{current_date}/{current_date}/{campaign_name}'
+            stats_url = f'{stats_url}{ts.credentials.api_key}/subacc/{current_date}/{current_date}/{campaign_name}'
 
         return stats_url
 
-    def get_ungads_publishers_url(self, campaign_name, start_date=None, end_date=None):
+    def get_ungads_publishers_url(self, campaign_name, ts, start_date=None, end_date=None):
         stats_url = self.config['ungads_urls']['stats']
-        ungads_api_key = self.config["api_keys"]["ungads"]
-        stats_url = stats_url.replace('[API_KEY]', ungads_api_key)
+        stats_url = stats_url.replace('[API_KEY]', ts.credentials.api_key)
 
         if start_date and end_date:
             start_date = start_date.strftime("%Y-%m-%d")
@@ -120,13 +123,19 @@ class ApiUtils:
 
         return stats_url
 
-    def get_campaign_status_url(self):
+    def get_campaign_status_url(self, ts: TrafficSource):
         status_url = self.config['ungads_urls']['campaign_status']
-        ungads_api_key = self.config["api_keys"]["ungads"]
-        status_url = status_url.replace('[API_KEY]', ungads_api_key)
+        status_url = status_url.replace('[API_KEY]', ts.credentials.api_key)
         return status_url
 
-    def parse_binom_campaigns_json(self, json, ts_id):
+    def get_binom_traffic_sources_url(self, binom: Binom):
+        ts_url = self.config['binom_urls']['traffic_sources']
+
+        ts_url = ts_url.replace('[BINOM_URL]', binom.url)
+        ts_url = f'{ts_url}&api_key={binom.api_key}'
+        return ts_url
+
+    def parse_binom_campaigns_json(self, json, ts: TrafficSource, binom: Binom):
         campaigns = []
         if not json:
             return campaigns
@@ -143,7 +152,8 @@ class ApiUtils:
                         continue
 
                     revenue = float(element['revenue'])
-                    campaign = Campaign(name, revenue, ts_id)
+                    campaign = Campaign(name, revenue, ts.binom_ts_id)
+                    campaign.binom_source = binom.name
                     campaign.binom_clicks = int(element['clicks'])
                     campaign.lp_clicks = int(element['lp_clicks'])
                     campaign.leads = int(element['leads'])
@@ -155,18 +165,20 @@ class ApiUtils:
 
         return campaigns
 
-    def parse_ts_campaign_json(self, campaign, json):
+    def parse_ts_campaign_json(self, campaign, json, ts: TrafficSource):
         if not json:
             return campaign
 
-        if int(campaign.traffic_source) == self.config['traffic_source_ids']['push_house']:
+        if is_push_house(ts):
             campaign.clicks = float(json[0]['clicks'])
             campaign.impressions = float(json[0]['shows'])
             campaign.cost = float(json[0]['cost'])
-        else:
+        elif is_ungads(ts):
             campaign.clicks = float(json[0]['clicks'])
             campaign.impressions = float(json[0]['impressions'])
             campaign.cost = float(json[0]['spent_advertiser'])
+        else:
+            return None
 
         campaign.profit = campaign.revenue - campaign.cost
 
@@ -186,13 +198,15 @@ class ApiUtils:
 
         return campaign
 
-    def parse_campaign_status_json(self, ts_id, json):
-        if not json or int(ts_id) == self.config['traffic_source_ids']['push_house']:
+    def parse_campaign_status_json(self, ts: TrafficSource, json):
+        if not json or is_push_house(ts):
             return 'undefined'
+        elif is_ungads(ts):
+            return json[next(iter(json))]['status']
+        else:
+            return None
 
-        return json[next(iter(json))]['status']
-
-    def parse_binom_sources_json(self, json, ts_id):
+    def parse_binom_sources_json(self, json, ts, binom):
         sources = []
         campaign_name = ''
 
@@ -211,7 +225,8 @@ class ApiUtils:
 
                     name = element['name']
                     revenue = float(element['revenue'])
-                    source = Source(name, campaign_name, revenue, ts_id)
+                    source = Source(name, campaign_name, revenue, ts.binom_ts_id)
+                    source.binom_source = binom.name
                     source.binom_clicks = int(element['clicks'])
                     source.lp_clicks = int(element['lp_clicks'])
                     source.leads = int(element['leads'])
@@ -223,8 +238,11 @@ class ApiUtils:
 
         return sources
 
-    def parse_ts_sources_json(self, campaign_name, sources, ts_id, json):
+    def parse_ts_sources_json(self, campaign_name, sources, json):
         if not json:
+            return sources
+
+        if not sources:
             return sources
 
         sources_with_campaign_name = set()
@@ -287,12 +305,58 @@ class ApiUtils:
 
         return list(sources_with_campaign_name)
 
-    def get_campaigns_data_from_binom(self, ts_id, start_date=None, end_date=None):
+    def parse_binom_traffic_sources_json(self, json, binom):
+        traffic_sources = []
+        if not json:
+            return traffic_sources
+
+        for element in json:
+            try:
+                if 'name' not in element:
+                    continue
+
+                name = element['name']
+                ts_id = element['id']
+                url = element['postback_url']
+                traffic_source = TrafficSource(name, ts_id, binom.id, -1)
+
+                if 'push' and 'house' in url:
+                    traffic_source.url = 'https://push.house/'
+                elif 'ungads' in url:
+                    traffic_source.url = 'https://ungads.com/'
+
+                traffic_sources.append(traffic_source)
+            except:
+                logging.error('Parsing traffic sources json error')
+
+        return traffic_sources
+
+    def get_binom_traffic_sources(self, binom):
+        try:
+            url = self.get_binom_traffic_sources_url(binom)
+            response_json = None
+            while not response_json or 'Exception' in str(response_json):
+                response = requests.get(url)
+                response_json = response.json()
+                logging.debug(f"{str(response_json)[0:300]}... (output suppressed)")
+                time.sleep(3)
+
+            # If the response was successful, no Exception will be raised
+            response.raise_for_status()
+        except HTTPError as http_err:
+            logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
+        except Exception as err:
+            logging.error(f'Other error occurred: {err}')  # Python 3.6
+        else:
+            logging.debug(f'Fetched traffic sources for binom {binom.name}')
+            return self.parse_binom_traffic_sources_json(response.json(), binom)
+
+    def get_campaigns_data_from_binom(self, ts: TrafficSource, binom: Binom, start_date=None, end_date=None):
         try:
             if start_date and end_date:
-                url = self.get_binom_campaigns_url(ts_id, start_date, end_date)
+                url = self.get_binom_campaigns_url(ts, binom, start_date, end_date)
             else:
-                url = self.get_binom_campaigns_url(ts_id)
+                url = self.get_binom_campaigns_url(ts, binom)
 
             response_json = None
             while not response_json or 'Exception' in str(response_json):
@@ -310,22 +374,22 @@ class ApiUtils:
         except Exception as err:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
-            logging.debug(f'Fetched campaigns data from binom (ts={ts_id})')
-            return self.parse_binom_campaigns_json(response.json(), ts_id)
+            logging.debug(f'Fetched campaigns data from binom (ts={ts.binom_ts_id})')
+            return self.parse_binom_campaigns_json(response.json(), ts, binom)
 
-    def get_campaigns_data_from_ts(self, campaigns, ts_id, start_date=None, end_date=None):
+    def get_campaigns_data_from_ts(self, campaigns, ts: TrafficSource, start_date=None, end_date=None):
         for campaign in campaigns:
             try:
-                if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+                if is_push_house(ts):
                     if start_date and end_date:
-                        url = self.get_push_house_campaign_url(campaign.name, start_date, end_date)
+                        url = self.get_push_house_campaign_url(campaign.name, ts, start_date, end_date)
                     else:
-                        url = self.get_push_house_campaign_url(campaign.name)
-                else:
+                        url = self.get_push_house_campaign_url(campaign.name, ts)
+                elif is_ungads(ts):
                     if start_date and end_date:
-                        url = self.get_ungads_campaign_url(campaign.name, start_date, end_date)
+                        url = self.get_ungads_campaign_url(campaign.name, ts, start_date, end_date)
                     else:
-                        url = self.get_ungads_campaign_url(campaign.name)
+                        url = self.get_ungads_campaign_url(campaign.name, ts)
 
                 response = requests.get(url)
 
@@ -336,23 +400,24 @@ class ApiUtils:
             except Exception as err:
                 logging.error(f'Other error occurred: {err}')  # Python 3.6
             else:
-                campaign = self.parse_ts_campaign_json(campaign, response.json())
-                logging.debug(f'Fetched data for campaign {campaign.name} from ts {ts_id}')
+                if response:
+                    campaign = self.parse_ts_campaign_json(campaign, response.json(), ts)
+                    logging.debug(f'Fetched data for campaign {campaign.name} from ts {ts.binom_ts_id}')
 
         return campaigns
 
-    def get_campaigns_statuses(self, campaigns, ts_id):
+    def get_campaigns_statuses(self, campaigns, ts: TrafficSource):
         response = None
         for campaign in campaigns:
             try:
-                if int(ts_id) == self.config['traffic_source_ids']['ungads']:
-                    url = self.get_campaign_status_url()
+                if is_ungads(ts):
+                    url = self.get_campaign_status_url(ts)
                     campaign_name = '[' + campaign.name + ']'
                     response = requests.post(url, data=campaign_name)
                     response.raise_for_status()
-                else:
+                elif is_push_house(ts):
                     paused = PausedCampaign.query.filter_by(campaign_name=campaign.name,
-                                                            traffic_source=ts_id).first()
+                                                            traffic_source=ts.binom_ts_id).first()
                     if paused:
                         campaign.status = 'paused'
                     else:
@@ -364,35 +429,23 @@ class ApiUtils:
                 logging.error(f'Other error occurred: {err}')  # Python 3.6
             else:
                 if response:
-                    status = self.parse_campaign_status_json(ts_id, response.json())
+                    status = self.parse_campaign_status_json(ts, response.json())
                     campaign.status = status
 
         return campaigns
 
-    def get_campaigns(self, ts_id, start_date=None, end_date=None):
-        if start_date and end_date:
-            try:
-                campaigns = self.get_campaigns_data_from_binom(ts_id, start_date, end_date)
-                campaigns = self.get_campaigns_data_from_ts(campaigns, ts_id, start_date, end_date)
-                campaigns = self.get_campaigns_statuses(campaigns, ts_id)
-            except Exception as e:
-                logging.error(f'{e}. Trying again')
-                campaigns = self.get_campaigns_data_from_binom(ts_id, start_date, end_date)
-                campaigns = self.get_campaigns_data_from_ts(campaigns, ts_id, start_date, end_date)
-                campaigns = self.get_campaigns_statuses(campaigns, ts_id)
-        else:
-            campaigns = self.get_campaigns_data_from_binom(ts_id)
-            campaigns = self.get_campaigns_data_from_ts(campaigns, ts_id)
-            campaigns = self.get_campaigns_statuses(campaigns, ts_id)
-
+    def get_campaigns(self, ts: TrafficSource, binom: Binom, start_date=None, end_date=None):
+        campaigns = self.get_campaigns_data_from_binom(ts, binom, start_date, end_date)
+        campaigns = self.get_campaigns_data_from_ts(campaigns, ts, start_date, end_date)
+        campaigns = self.get_campaigns_statuses(campaigns, ts)
         return campaigns
 
-    def get_sources_data_from_binom(self, ts_id, start_date=None, end_date=None):
+    def get_sources_data_from_binom(self, ts: TrafficSource, binom: Binom, start_date=None, end_date=None):
         try:
             if start_date and end_date:
-                url = self.get_binom_sources_url(ts_id, start_date, end_date)
+                url = self.get_binom_sources_url(ts, binom, start_date, end_date)
             else:
-                url = self.get_binom_sources_url(ts_id)
+                url = self.get_binom_sources_url(ts, binom)
 
             response_json = None
             while not response_json or 'Exception' in str(response_json):
@@ -410,24 +463,24 @@ class ApiUtils:
         except Exception as err:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
-            logging.debug(f'Fetched sources data from binom (ts={ts_id})')
+            logging.debug(f'Fetched sources data from binom (ts={ts.binom_ts_id})')
 
-            return self.parse_binom_sources_json(response.json(), ts_id)
+            return self.parse_binom_sources_json(response.json(), ts, binom)
 
-    def get_sources_data_from_ts(self, campaigns, sources, ts_id, start_date=None, end_date=None):
+    def get_sources_data_from_ts(self, campaigns, sources, ts: TrafficSource, start_date=None, end_date=None):
         result_sources = []
         for campaign in campaigns:
             try:
-                if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+                if is_push_house(ts):
                     if start_date and end_date:
-                        url = self.get_push_house_sources_url(campaign.name, start_date, end_date)
+                        url = self.get_push_house_sources_url(campaign.name, ts, start_date, end_date)
                     else:
-                        url = self.get_push_house_sources_url(campaign.name)
+                        url = self.get_push_house_sources_url(campaign.name, ts)
                 else:
                     if start_date and end_date:
-                        url = self.get_ungads_publishers_url(campaign.name, start_date, end_date)
+                        url = self.get_ungads_publishers_url(campaign.name, ts, start_date, end_date)
                     else:
-                        url = self.get_ungads_publishers_url(campaign.name)
+                        url = self.get_ungads_publishers_url(campaign.name, ts)
 
                 response = requests.get(url)
 
@@ -438,34 +491,28 @@ class ApiUtils:
             except Exception as err:
                 logging.error(f'Other error occurred: {err}')  # Python 3.6
             else:
-                campaign_sources = self.parse_ts_sources_json(campaign.name, sources, ts_id, response.json())
-                logging.debug(f'Fetched data for sources with campaign_name {campaign.name} from ts {ts_id}')
-                result_sources += campaign_sources
+                campaign_sources = self.parse_ts_sources_json(campaign.name, sources, response.json())
+                logging.debug(f'Fetched data for sources with campaign_name {campaign.name} from ts {ts.binom_ts_id}')
+                if campaign_sources:
+                    result_sources += campaign_sources
 
         return result_sources
 
-    def get_sources_statuses(self, sources, ts_id):
+    def get_sources_statuses(self, sources, ts: TrafficSource):
         for source in sources:
             paused = PausedSource.query.filter_by(source_name=source.name,
                                                   campaign_name=source.campaign_name,
-                                                  traffic_source=ts_id).first()
+                                                  traffic_source=ts.binom_ts_id).first()
             if paused:
                 source.status = 'paused'
             else:
                 source.status = 'running*'
         return sources
 
-    def get_sources(self, campaigns, ts_id, start_date=None, end_date=None):
-        try:
-            sources = self.get_sources_data_from_binom(ts_id, start_date, end_date)
-            sources = self.get_sources_data_from_ts(campaigns, sources, ts_id, start_date, end_date)
-            sources = self.get_sources_statuses(sources, ts_id)
-        except Exception as e:
-            logging.error(f'{e}. Trying again')
-            sources = self.get_sources_data_from_binom(ts_id, start_date, end_date)
-            sources = self.get_sources_data_from_ts(campaigns, sources, ts_id, start_date, end_date)
-            sources = self.get_sources_statuses(sources, ts_id)
-
+    def get_sources(self, campaigns, ts: TrafficSource, binom: Binom, start_date=None, end_date=None):
+        sources = self.get_sources_data_from_binom(ts, binom, start_date, end_date)
+        sources = self.get_sources_data_from_ts(campaigns, sources, ts, start_date, end_date)
+        sources = self.get_sources_statuses(sources, ts)
         return sources
 
     def get_campaign_start_url(self, campaign_name, ts_id):
@@ -751,15 +798,23 @@ class ApiUtils:
 
         for rule in rules:
             if rule.source_name != '*':
+                sources_list = DailySource.query.filter(
+                    and_(
+                        Source.name == rule.source_name,
+                        Source.campaign_name == rule.campaign_name)).all()
+
                 current_sources = Source.query.filter(
                     and_(
                         Source.name == rule.source_name,
                         Source.campaign_name == rule.campaign_name)).all()
             else:
+                sources_list = DailySource.query.filter(Source.campaign_name == rule.campaign_name).all()
                 current_sources = Source.query.filter(Source.campaign_name == rule.campaign_name).all()
 
+            sources_list = sources_list + current_sources
+
             unique_names = set()
-            [unique_names.add((source.name, source.campaign_name)) for source in current_sources if
+            [unique_names.add((source.name, source.campaign_name)) for source in sources_list if
              (source.name, source.campaign_name) not in unique_names]
 
             sources_stats_list = []

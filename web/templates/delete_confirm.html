@@ -1,6 +1,5 @@
 {% extends 'modal.html' %}
 
-{% set return_link=url_for('campaigns_rules') %}
 {% set color='is-dark' %}
 
 {% block message_header %}
@@ -22,13 +21,7 @@
                 <div class="control">
                     <input class="button is-danger is-outlined is-rounded" type="submit" value="Yes, delete">
                 </div>
-                <div class="control">
-                    <a class="button is-link is-outlined is-rounded" href="{{ return_link }}">
-                        Cancel
-                    </a>
-                </div>
             </div>
         </div>
-
     </form>
 {% endblock %}
