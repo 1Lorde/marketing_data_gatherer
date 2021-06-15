@@ -27,13 +27,14 @@ def live_job():
         for binom in binoms:
             ts_list = TrafficSource.query.filter_by(binom_id=binom.id).all()
             for ts in ts_list:
-                campaigns = api.get_campaigns(ts, binom)
-                sources = api.get_sources(campaigns, ts, binom)
-                campaigns, sources, fetched_at = set_fetched_at(campaigns, sources, now)
-                fetched_campaigns += campaigns
-                fetched_sources += sources
-                logging.debug(f"Campaigns ({binom.name}, {ts.binom_ts_id}):\n{campaigns}")
-                logging.debug(f"Sources({binom.name}, {ts.binom_ts_id}):\n{sources}")
+                if ts.credentials_id != -1:
+                    campaigns = api.get_campaigns(ts, binom)
+                    sources = api.get_sources(campaigns, ts, binom)
+                    campaigns, sources, fetched_at = set_fetched_at(campaigns, sources, now)
+                    fetched_campaigns += campaigns
+                    fetched_sources += sources
+                    logging.debug(f"Campaigns ({binom.name}, {ts.binom_ts_id}):\n{campaigns}")
+                    logging.debug(f"Sources({binom.name}, {ts.binom_ts_id}):\n{sources}")
 
         last_fetched_at = get_last_fetched()
         remove_data_fetched_at(last_fetched_at)
@@ -61,16 +62,17 @@ def daily_job():
         for binom in binoms:
             ts_list = TrafficSource.query.filter_by(binom_id=binom.id).all()
             for ts in ts_list:
-                campaigns = api.get_campaigns(ts, binom, start_date=yesterday, end_date=yesterday)
-                sources = api.get_sources(campaigns, ts, binom, start_date=yesterday, end_date=yesterday)
+                if ts.credentials_id != -1:
+                    campaigns = api.get_campaigns(ts, binom, start_date=yesterday, end_date=yesterday)
+                    sources = api.get_sources(campaigns, ts, binom, start_date=yesterday, end_date=yesterday)
 
-                daily_campaigns = campaigns_to_daily(campaigns)
-                daily_sources = sources_to_daily(sources)
+                    daily_campaigns = campaigns_to_daily(campaigns)
+                    daily_sources = sources_to_daily(sources)
 
-                fetched_campaigns += daily_campaigns
-                fetched_sources += daily_sources
+                    fetched_campaigns += daily_campaigns
+                    fetched_sources += daily_sources
 
-                daily_campaigns, daily_sources, fetched_at = set_fetched_at(daily_campaigns, daily_sources, yesterday)
+                    daily_campaigns, daily_sources, fetched_at = set_fetched_at(daily_campaigns, daily_sources, yesterday)
 
         save_data_to_db(daily_campaigns, daily_sources)
         last_day = yesterday - timedelta(30)

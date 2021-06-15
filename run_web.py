@@ -551,15 +551,25 @@ def logs():
 @app.route('/binoms', methods=['GET', 'POST'])
 def binoms():
     if request.method == 'POST':
-        ts_id = request.form.get('ts_id')
-        credentials_id = request.form.get('credentials')
+        if request.form.get('update_ts_for'):
+            update_ts_for = request.form.get('update_ts_for')
+            binom = Binom.query.filter_by(id=update_ts_for).first()
+            traffic_sources = api.get_binom_traffic_sources(binom)
+            for ts in traffic_sources:
+                if not TrafficSource.query.filter_by(binom_id=binom.id, binom_ts_id=ts.binom_ts_id).first():
+                    db.session.add(ts)
 
-        ts = TrafficSource.query.filter_by(id=ts_id).first()
-        ts.credentials_id = credentials_id
-        db.session.add(ts)
-        db.session.commit()
+            db.session.commit()
+        else:
+            ts_id = request.form.get('ts_id')
+            credentials_id = request.form.get('credentials')
 
-        return redirect(url_for('binoms'))
+            ts = TrafficSource.query.filter_by(id=ts_id).first()
+            ts.credentials_id = credentials_id
+            db.session.add(ts)
+            db.session.commit()
+
+            return redirect(url_for('binoms'))
 
     binoms_list = Binom.query.all()
     ts_list = TrafficSource.query.all()

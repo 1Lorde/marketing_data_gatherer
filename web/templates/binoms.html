@@ -25,6 +25,15 @@
                        href="{{ url_for('delete_binom', binom_id=binom.id) }}">
                         <ion-icon name="trash-outline"></ion-icon>
                     </a>
+
+                    <form method="post">
+                        <input type="hidden" name="update_ts_for" value="{{ binom.id }}">
+                        <button type="submit" class="button is-small is-link is-pulled-right mr-3">
+                            <span class="mr-2">Update traffic sources</span>
+                            <ion-icon name="cloud-download-outline"></ion-icon>
+                        </button>
+                    </form>
+
                     <p class="title is-5 pl-5"><strong>{{ binom.name }}</strong></p>
                     <hr/>
                     <div class="level">
@@ -53,9 +62,7 @@
                                             <span class="control is-size-7">
                                             <div class="select">
                                                 <select onchange="this.form.submit()" name="credentials">
-                                                    {% if ts.credentials_id == -1 %}
-                                                        <option selected disabled>No credentials</option>
-                                                    {% endif %}
+                                                    <option value="-1">No credentials (disabled)</option>
 
                                                     {% for creds in creds_list %}
                                                         {% if ts.credentials_id == creds.id %}
@@ -73,9 +80,6 @@
                                 </div>
                             {% endif %}
                         {% endfor %}
-                    </div>
-                    <div id="save_button" style="display: none;">
-
                     </div>
                 </div>
             {% endfor %}
