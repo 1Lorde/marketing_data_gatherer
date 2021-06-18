@@ -1,6 +1,6 @@
 {% extends "message.html" %}
 
-{% set pagination_source='current_campaigns' %}
+{% set pagination_source='paused_campaigns' %}
 
 {% set previous_link=url_for(
                         pagination_source,
@@ -48,15 +48,46 @@
 {% block message_header %}
     <span class="icon-text">
         <span class="icon">
-            <ion-icon size="large" name="pulse-outline"></ion-icon>
+            <ion-icon size="large" name="pause-circle-outline"></ion-icon>
         </span>
-        <span class="ml-2">Live Campaigns</span>
+        <span class="ml-2">Paused Campaigns</span>
     </span>
 {% endblock %}
 
 {% block message_body %}
-    <div class="table_div">
-        {{ table|safe }}
+    <div class="container">
+        {% if paused_list %}
+            <ol>
+                {% for camp in paused_list %}
+                    <div class="box block subtitle is-6">
+                        <li class="ml-3">
+                            <span>
+                                Paused Campaign
+                                <span class="has-text-link">
+                                    <strong>{{ camp.campaign_name }}</strong>
+                                </span>
+                                from TS
+                                <span class="tag is-medium is-warning is-rounded">
+                                    {{ camp.ts.name }}
+                                    (<strong>ID:{{ camp.ts.binom_ts_id }}</strong>)
+                                </span>
+                                from binom
+                                <span class="tag is-medium is-warning is-rounded">
+                                    {{ camp.ts.binom.name }}
+                                </span>
+                            </span>
+
+                            <a class="button is-small is-danger is-pulled-right"
+                               href="{{ url_for('campaigns_delete_paused', ts_id=camp.ts.id, camp_name=camp.campaign_name) }}">
+                                <ion-icon name="trash-outline"></ion-icon>
+                            </a>
+                        </li>
+                    </div>
+                {% endfor %}
+            </ol>
+        {% else %}
+            <p>No campaigns here</p>
+        {% endif %}
     </div>
 {% endblock %}
 
@@ -74,37 +105,28 @@
                     </span>
                 </div>
 
-                <br/>
-
-                <div class="buttons has-addons is-centered">
-                    {% if ts == 'push_house' %}
-                        <a class="button is-small is-rounded is-success is-selected"
-                           href="{{ url_for('current_campaigns', ts="push_house") }}">
-                            Push.House
-                        </a>
-
-                        <a class="button is-rounded is-small"
-                           href="{{ url_for('current_campaigns', ts="ungads") }}">
-                            Ungads
-                        </a>
-                    {% else %}
-                        <a class="button is-small is-rounded"
-                           href="{{ url_for('current_campaigns', ts="push_house") }}">
-                            Push.House
-                        </a>
-
-                        <a class="button is-rounded is-small is-success is-selected"
-                           href="{{ url_for('current_campaigns', ts="ungads") }}">
-                            Ungads
-                        </a>
-                    {% endif %}
-                </div>
-
                 <hr/>
 
-                <p class="heading is-size-6 has-text-centered">Live Campaigns</p>
+                <p class="heading is-size-6 has-text-centered">Paused Campaigns</p>
 
                 <hr/>
+                <a href="{{ url_for('campaigns_add_paused') }}" class="navbar-item title is-6 m-0">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="pause-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">Add Paused Campaign</span>
+                    </span>
+                </a>
+                <hr/>
+                <a href="{{ url_for('current_campaigns', ts=ts) }}" class="navbar-item title is-6 m-0">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="pulse-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">Live Campaigns</span>
+                    </span>
+                </a>
                 <a href="{{ url_for('daily_campaigns', start=yesterday, end=yesterday, ts=ts) }}"
                    class="navbar-item title is-6 m-0">
                     <span class="icon-text">
@@ -120,14 +142,6 @@
                             <ion-icon size="large" name="pie-chart-outline"></ion-icon>
                         </span>
                         <span class="ml-2">Campaigns Stats</span>
-                    </span>
-                </a>
-                <a href="{{ url_for('paused_campaigns') }}" class="navbar-item title is-6 m-0">
-                    <span class="icon-text">
-                        <span class="icon">
-                            <ion-icon size="large" name="pause-circle-outline"></ion-icon>
-                        </span>
-                        <span class="ml-2">Paused Campaigns</span>
                     </span>
                 </a>
             </div>

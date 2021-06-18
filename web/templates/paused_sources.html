@@ -1,0 +1,145 @@
+{% extends "message.html" %}
+
+{% set pagination_source='paused_sources' %}
+
+{% set previous_link=url_for(
+                        pagination_source,
+                        page=pagination_data['previous'],
+                        start=start if start else None,
+                        end=end if end else None,
+                        ts=ts if ts else None) %}
+
+{% set next_link=url_for(
+                        pagination_source,
+                        page=pagination_data['next'],
+                        start=start if start else None,
+                        end=end if end else None,
+                        ts=ts if ts else None) %}
+
+{% set first_link=url_for(
+                        pagination_source,
+                        page=pagination_data['first'],
+                        start=start if start else None,
+                        end=end if end else None,
+                        ts=ts if ts else None) %}
+
+{% set current_link=url_for(
+                        pagination_source,
+                        page=pagination_data['current'],
+                        start=start if start else None,
+                        end=end if end else None,
+                        ts=ts if ts else None) %}
+
+{% set last_link=url_for(
+                        pagination_source,
+                        page=pagination_data['last'],
+                        start=start if start else None,
+                        end=end if end else None,
+                        ts=ts if ts else None) %}
+
+
+{% block panel %}
+    <div class="level"></div>
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
+{% block message_header %}
+    <span class="icon-text">
+        <span class="icon">
+            <ion-icon size="large" name="pause-circle-outline"></ion-icon>
+        </span>
+        <span class="ml-2">Paused Sources</span>
+    </span>
+{% endblock %}
+
+{% block message_body %}
+    <div class="container">
+        {% if paused_list %}
+            <ol>
+                {% for source in paused_list %}
+                    <div class="box block subtitle is-6">
+                        <li class="ml-3">
+                            <span>
+                                Paused SourceId
+                                <span class="has-text-info">
+                                    <strong>{{ source.source_name }}</strong>
+                                </span>
+                                from Campaign
+                                <span class="has-text-link">
+                                    <strong>{{ source.campaign_name }}</strong>
+                                </span>
+                                from TS
+                                <span class="tag is-medium is-warning is-rounded">
+                                    {{ source.ts.name }}
+                                    (<strong>ID:{{ source.ts.binom_ts_id }}</strong>)
+                                </span>
+                                from binom
+                                <span class="tag is-medium is-warning is-rounded">
+                                    {{ source.ts.binom.name }}
+                                </span>
+                            </span>
+
+                            <a class="button is-small is-danger is-pulled-right"
+                               href="{{ url_for('sources_delete_paused', ts_id=source.ts.id, camp_name=source.campaign_name, source_name=source.source_name) }}">
+                                <ion-icon name="trash-outline"></ion-icon>
+                            </a>
+                        </li>
+                    </div>
+                {% endfor %}
+            </ol>
+        {% else %}
+            <p>No sources here</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block side_menu %}
+    <div class="box">
+        <aside class="menu">
+            <div class="block">
+                <div class="level-left">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon class="has-text-info" size="large"
+                                      name="stats-chart-outline"></ion-icon>
+                        </span>
+                        <span class="subtitle ml-2">SourceIds</span>
+                    </span>
+                </div>
+
+                <hr/>
+
+                <p class="heading is-size-6 has-text-centered">Paused SourceIds</p>
+                <hr/>
+                <a href="{{ url_for('sources_add_paused') }}" class="navbar-item title is-6 m-0">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="pause-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">Add Paused SourceId</span>
+                    </span>
+                </a>
+                <hr/>
+                <a href="{{ url_for('daily_sources', start=yesterday, end=yesterday, ts=ts) }}"
+                   class="navbar-item title is-6 m-0">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="filter-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">SourceIds by Days</span>
+                    </span>
+                </a>
+                <a href="{{ url_for('sources_stats', ts=ts) }}" class="navbar-item title is-6 m-0">
+                    <span class="icon-text">
+                        <span class="icon">
+                        <ion-icon size="large" name="pie-chart-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">SourceIds Stats</span>
+                    </span>
+                </a>
+            </div>
+        </aside>
+    </div>
+{% endblock %}

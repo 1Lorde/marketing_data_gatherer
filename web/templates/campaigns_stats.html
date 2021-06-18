@@ -72,7 +72,7 @@
                     <span class="icon-text">
                         <span class="icon">
                             <ion-icon class="has-text-link" size="large"
-                              name="bar-chart-outline"></ion-icon>
+                                      name="bar-chart-outline"></ion-icon>
                         </span>
                         <span class="subtitle ml-2">Campaigns</span>
                     </span>
@@ -179,6 +179,14 @@
                             <ion-icon size="large" name="filter-outline"></ion-icon>
                         </span>
                         <span class="ml-2">Campaigns By Days</span>
+                    </span>
+                </a>
+                <a href="{{ url_for('paused_campaigns') }}" class="navbar-item title is-6 m-0">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="pause-circle-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">Paused Campaigns</span>
                     </span>
                 </a>
             </div>

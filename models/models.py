@@ -314,49 +314,6 @@ class SourceRule(db.Model):
         return f"SourceRule (id={self.rule_id})"
 
 
-class PausedSource(db.Model):
-    id = Column(Integer, primary_key=True)
-    source_name = Column(String)
-    campaign_name = Column(String)
-    traffic_source = Column(String)
-
-    def __init__(self, source_name, campaign_name, traffic_source):
-        self.source_name = source_name
-        self.campaign_name = campaign_name
-        self.traffic_source = traffic_source
-
-    def __repr__(self):
-        return f"PausedSource (source_name={self.source_name}, traffic source={self.traffic_source}, campaign_name={self.campaign_name})"
-
-
-class PausedCampaign(db.Model):
-    id = Column(Integer, primary_key=True)
-    campaign_name = Column(String)
-    traffic_source = Column(String)
-
-    def __init__(self, campaign_name, traffic_source):
-        self.campaign_name = campaign_name
-        self.traffic_source = traffic_source
-
-    def __repr__(self):
-        return f"PausedCampaign (campaign_name={self.campaign_name}, traffic source={self.traffic_source})"
-
-
-class Binom(db.Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    url = Column(String)
-    api_key = Column(String)
-
-    def __init__(self, name, url, api_key):
-        self.name = name
-        self.url = url
-        self.api_key = api_key
-
-    def __repr__(self):
-        return f"Binom (name={self.name}, url={self.url})"
-
-
 class TrafficSource(db.Model):
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -377,6 +334,53 @@ class TrafficSource(db.Model):
 
     def __repr__(self):
         return f"TrafficSource (name={self.name}, url={self.url}, binom_ts_id={self.binom_ts_id}, binom={self.binom.name})"
+
+
+class PausedSource(db.Model):
+    id = Column(Integer, primary_key=True)
+    source_name = Column(String)
+    campaign_name = Column(String)
+
+    ts_id = db.Column(db.Integer, db.ForeignKey('traffic_source.id'), nullable=False)
+    ts = db.relationship('TrafficSource', backref=db.backref('templates3', lazy=True))
+
+    def __init__(self, source_name, campaign_name, ts: TrafficSource):
+        self.source_name = source_name
+        self.campaign_name = campaign_name
+        self.ts = ts
+
+    def __repr__(self):
+        return f"PausedSource (source_name={self.source_name}, traffic source={self.ts_id}, campaign_name={self.campaign_name})"
+
+
+class PausedCampaign(db.Model):
+    id = Column(Integer, primary_key=True)
+    campaign_name = Column(String)
+
+    ts_id = db.Column(db.Integer, db.ForeignKey('traffic_source.id'), nullable=False)
+    ts = db.relationship('TrafficSource', backref=db.backref('templates2', lazy=True))
+
+    def __init__(self, campaign_name, ts: TrafficSource):
+        self.campaign_name = campaign_name
+        self.ts = ts
+
+    def __repr__(self):
+        return f"PausedCampaign (campaign_name={self.campaign_name}, traffic source={self.ts_id})"
+
+
+class Binom(db.Model):
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    url = Column(String)
+    api_key = Column(String)
+
+    def __init__(self, name, url, api_key):
+        self.name = name
+        self.url = url
+        self.api_key = api_key
+
+    def __repr__(self):
+        return f"Binom (name={self.name}, url={self.url})"
 
 
 class TrafficSourceCredentials(db.Model):

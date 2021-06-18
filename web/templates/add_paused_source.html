@@ -1,0 +1,119 @@
+{% extends "message.html" %}
+
+{% block panel %}
+    <div class="level"></div>
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
+{% block message_header %}
+    <span class="icon-text">
+        <span class="icon">
+            <ion-icon size="large" name="pause-outline"></ion-icon>
+        </span>
+        <span class="ml-2">Add Paused SourceId</span>
+    </span>
+{% endblock %}
+
+{% block message_body %}
+    <form method="post">
+        <div class="container">
+            <div class="columns">
+                <div class="column">
+                    <div class="field">
+                        <label class="label">SourceId Name</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="text" name="source_name" placeholder='For example, "8018321"'>
+                            <span class="icon is-small is-left">
+                                <ion-icon name="text-outline"></ion-icon>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Campaign Name</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="text" name="campaign_name" placeholder='For example, "375632"'>
+                            <span class="icon is-small is-left">
+                                <ion-icon name="text-outline"></ion-icon>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Traffic Source</label>
+
+                        <div class="select">
+                            <select name="ts_id">
+                                <option selected disabled>Please choose</option>
+                                {% for ts in ts_list %}
+                                    <option value="{{ ts.id }}">
+                                        {{ ts.name }}
+                                        ({{ ts.binom_ts_id }} from {{ ts.binom.name }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="column"></div>
+            </div>
+        </div>
+        <hr/>
+        <div class="field has-text-centered">
+            <div class="control">
+                <input class="button is-link" type="submit" value="Add"/>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block side_menu %}
+    <div class="box">
+        <aside class="menu">
+            <div class="block">
+                <div class="level-left">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon class="has-text-info" size="large"
+                                      name="stats-chart-outline"></ion-icon>
+                        </span>
+                        <span class="subtitle ml-2">SourceIds</span>
+                    </span>
+                </div>
+
+                <hr/>
+
+                <p class="heading is-size-6 has-text-centered">Add Paused SourceIds</p>
+                <hr/>
+                <a href="{{ url_for('paused_sources') }}" class="navbar-item title is-6 m-0">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="pause-circle-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">Paused SourceIds</span>
+                    </span>
+                </a>
+                <hr/>
+                <a href="{{ url_for('daily_sources', start=yesterday, end=yesterday, ts=ts) }}"
+                   class="navbar-item title is-6 m-0">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="filter-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">SourceIds by Days</span>
+                    </span>
+                </a>
+                <a href="{{ url_for('sources_stats', ts=ts) }}" class="navbar-item title is-6 m-0">
+                    <span class="icon-text">
+                        <span class="icon">
+                        <ion-icon size="large" name="pie-chart-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">SourceIds Stats</span>
+                    </span>
+                </a>
+            </div>
+        </aside>
+    </div>
+{% endblock %}

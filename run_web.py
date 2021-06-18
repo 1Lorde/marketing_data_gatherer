@@ -7,7 +7,7 @@ from sqlalchemy import and_
 from sqlalchemy_utils import database_exists
 
 from models.models import db, Campaign, Source, DailyCampaign, DailySource, \
-    CampaignRule, SourceRule, Binom, TrafficSource, TrafficSourceCredentials
+    CampaignRule, SourceRule, Binom, TrafficSource, TrafficSourceCredentials, PausedCampaign, PausedSource
 from utils.api_utils import ApiUtils
 from utils.rules_utils import set_campaign_rule_fields, save_rule_to_db, set_source_rule_fields
 from utils.utils import read_config, init_logger
@@ -239,6 +239,50 @@ def daily_campaigns():
                            ts=ts_arg)
 
 
+@app.route('/campaigns/paused', methods=['GET', 'POST'])
+def paused_campaigns():
+    campaigns_list = PausedCampaign.query.all()
+
+    if len(campaigns_list) == 0:
+        return render_empty_campaigns('paused_campaigns.html', None)
+
+    return render_template('paused_campaigns.html',
+                           pagination_data=None,
+                           paused_list=campaigns_list)
+
+
+@app.route('/campaigns/paused/add', methods=['GET', 'POST'])
+def campaigns_add_paused():
+    if request.method == 'POST':
+        campaign_name = request.form.get('campaign_name')
+        ts_id = request.form.get('ts_id')
+
+        if campaign_name and ts_id:
+            ts = TrafficSource.query.filter_by(id=ts_id).first()
+            paused = PausedCampaign(campaign_name, ts)
+            db.session.add(paused)
+            db.session.commit()
+            return redirect(url_for('paused_campaigns'))
+
+    ts_list = TrafficSource.query.all()
+    return render_template('add_paused_campaign.html',
+                           form=None,
+                           ts_list=ts_list)
+
+
+@app.route('/campaigns/paused/delete/<ts_id>/<camp_name>', methods=['GET', 'POST'])
+def campaigns_delete_paused(ts_id, camp_name):
+    deleted_camp = PausedCampaign.query.filter_by(campaign_name=camp_name, ts_id=ts_id).first()
+    if request.method == 'POST':
+        db.session.delete(deleted_camp)
+        db.session.commit()
+        return redirect(url_for('paused_campaigns'))
+
+    return render_template('delete_confirm.html',
+                           message_title="Removing paused campaign",
+                           message="Are you really want to delete paused campaign " + deleted_camp.campaign_name + " from local db (not TS) ?")
+
+
 @app.route('/sources/current', methods=['GET', 'POST'])
 def current_sources():
     page_arg, start_arg, end_arg, ts_arg = get_path_args()
@@ -444,6 +488,51 @@ def daily_sources():
                            start=start_arg,
                            end=end_arg,
                            ts=ts_arg)
+
+
+@app.route('/sources/paused', methods=['GET'])
+def paused_sources():
+    sources_list = PausedSource.query.all()
+
+    if len(sources_list) == 0:
+        return render_empty_sources('paused_campaigns.html', None)
+
+    return render_template('paused_sources.html',
+                           pagination_data=None,
+                           paused_list=sources_list)
+
+
+@app.route('/sources/paused/add', methods=['GET', 'POST'])
+def sources_add_paused():
+    if request.method == 'POST':
+        source_name = request.form.get('source_name')
+        campaign_name = request.form.get('campaign_name')
+        ts_id = request.form.get('ts_id')
+
+        if source_name and campaign_name and ts_id:
+            ts = TrafficSource.query.filter_by(id=ts_id).first()
+            paused = PausedSource(source_name, campaign_name, ts)
+            db.session.add(paused)
+            db.session.commit()
+            return redirect(url_for('paused_sources'))
+
+    ts_list = TrafficSource.query.all()
+    return render_template('add_paused_source.html',
+                           form=None,
+                           ts_list=ts_list)
+
+
+@app.route('/sources/paused/delete/<ts_id>/<camp_name>/<source_name>', methods=['GET', 'POST'])
+def sources_delete_paused(ts_id, camp_name, source_name):
+    deleted_source = PausedSource.query.filter_by(source_name=source_name, campaign_name=camp_name, ts_id=ts_id).first()
+    if request.method == 'POST':
+        db.session.delete(deleted_source)
+        db.session.commit()
+        return redirect(url_for('paused_sources'))
+
+    return render_template('delete_confirm.html',
+                           message_title="Removing paused source",
+                           message="Are you really want to delete paused source " + deleted_source.source_name + " from local db (not TS) ?")
 
 
 @app.route('/')

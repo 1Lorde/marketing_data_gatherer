@@ -58,7 +58,7 @@
                     <span class="icon-text">
                         <span class="icon">
                             <ion-icon class="has-text-info" size="large"
-                              name="stats-chart-outline"></ion-icon>
+                                      name="stats-chart-outline"></ion-icon>
                         </span>
                         <span class="subtitle ml-2">SourceIds</span>
                     </span>
@@ -110,6 +110,14 @@
                         <ion-icon size="large" name="pie-chart-outline"></ion-icon>
                         </span>
                         <span class="ml-2">SourceIds Stats</span>
+                    </span>
+                </a>
+                <a href="{{ url_for('paused_sources') }}" class="navbar-item title is-6 m-0">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <ion-icon size="large" name="pause-circle-outline"></ion-icon>
+                        </span>
+                        <span class="ml-2">Paused SourceIds</span>
                     </span>
                 </a>
             </div>

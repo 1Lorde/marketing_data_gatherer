@@ -417,7 +417,7 @@ class ApiUtils:
                     response.raise_for_status()
                 elif is_push_house(ts):
                     paused = PausedCampaign.query.filter_by(campaign_name=campaign.name,
-                                                            traffic_source=ts.binom_ts_id).first()
+                                                            ts_id=ts.id).first()
                     if paused:
                         campaign.status = 'paused'
                     else:
@@ -502,11 +502,11 @@ class ApiUtils:
         for source in sources:
             paused = PausedSource.query.filter_by(source_name=source.name,
                                                   campaign_name=source.campaign_name,
-                                                  traffic_source=ts.binom_ts_id).first()
+                                                  ts_id=ts.id).first()
             if paused:
                 source.status = 'paused'
             else:
-                source.status = 'running*'
+                source.status = 'running'
         return sources
 
     def get_sources(self, campaigns, ts: TrafficSource, binom: Binom, start_date=None, end_date=None):
@@ -571,7 +571,7 @@ class ApiUtils:
         try:
             url = self.get_campaign_start_url(campaign_name, ts)
             paused = PausedCampaign.query.filter_by(campaign_name=campaign_name,
-                                                    traffic_source=ts.binom_ts_id).first()
+                                                    ts_id=ts.id).first()
             if not paused:
                 return
 
@@ -580,7 +580,7 @@ class ApiUtils:
             logging.info(f"Applying rule for campaign {campaign_name}")
 
             PausedCampaign.query.filter_by(campaign_name=campaign_name,
-                                           traffic_source=ts.binom_ts_id).delete()
+                                           ts_id=ts.id).delete()
             db.session.commit()
         except HTTPError as http_err:
             logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
@@ -594,14 +594,14 @@ class ApiUtils:
         try:
             url = self.get_campaign_stop_url(campaign_name, ts)
             paused = PausedCampaign.query.filter_by(campaign_name=campaign_name,
-                                                    traffic_source=ts.binom_ts_id).first()
+                                                    ts_id=ts.id).first()
             if paused:
                 return
 
             response = requests.get(url)
             response.raise_for_status()
 
-            db.session.add(PausedCampaign(campaign_name, ts.binom_ts_id))
+            db.session.add(PausedCampaign(campaign_name, ts))
             db.session.commit()
         except HTTPError as http_err:
             logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
@@ -634,16 +634,16 @@ class ApiUtils:
 
             if is_push_house(ts):
                 already_blacklisted = PausedSource.query.filter_by(campaign_name=campaign_name,
-                                                                   traffic_source=ts.binom_ts_id).all()
+                                                                   ts_id=ts.id).all()
 
                 blacklisted = []
                 for source_name in sources_names:
                     paused = PausedSource.query.filter_by(source_name=source_name,
                                                           campaign_name=campaign_name,
-                                                          traffic_source=ts.binom_ts_id).first()
+                                                          ts_id=ts.id).first()
                     if not paused:
-                        blacklisted.append(PausedSource(source_name, campaign_name, ts.binom_ts_id))
-                        db.session.add(PausedSource(source_name, campaign_name, ts.binom_ts_id))
+                        blacklisted.append(PausedSource(source_name, campaign_name, ts))
+                        db.session.add(PausedSource(source_name, campaign_name, ts))
                         db.session.commit()
 
                 if len(blacklisted) == 0:
@@ -688,7 +688,7 @@ class ApiUtils:
 
             if is_push_house(ts):
                 already_blacklisted = PausedSource.query.filter_by(campaign_name=campaign_name,
-                                                                   traffic_source=ts.binom_ts_id).all()
+                                                                   ts_id=ts.id).all()
                 already_blacklisted = list((source.source_name for source in already_blacklisted))
 
                 for source_name in sources_names:
@@ -696,7 +696,7 @@ class ApiUtils:
                         already_blacklisted.remove(source_name)
                         PausedSource.query.filter_by(source_name=source_name,
                                                      campaign_name=campaign_name,
-                                                     traffic_source=ts.binom_ts_id).delete()
+                                                     ts_id=ts.id).delete()
                         db.session.commit()
 
                 if len(already_blacklisted) == 0:
@@ -980,12 +980,13 @@ class ApiUtils:
 
             if len(appropriate_sources) != 0:
                 # logging.info(f"Applying rule for source id {rule.source_name} for campaign {rule.campaign_name}")
-
                 action = get_source_action(getattr(rule, 'action'), self)
+
+                binom = Binom.query.filter_by(name=binom_source).first()
                 ts = TrafficSource.query.filter(
                     and_(
                         TrafficSource.binom_ts_id == traffic_source,
-                        TrafficSource.binom.name == binom_source
+                        TrafficSource.binom_id == binom.id
                     )
                 ).first()
                 action(campaign_name, appropriate_sources, ts)
