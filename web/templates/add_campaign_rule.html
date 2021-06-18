@@ -36,10 +36,31 @@
                         </div>
                     </div>
 
-                    <label class="checkbox is-pulled-right pt-2">
+                    <label class="checkbox is-pulled-right pt-1">
                         <input type="checkbox" id="all_checkbox" onclick="disableInput()">
                         All names
                     </label>
+                </div>
+
+                <div class="level-right">
+                    <div class="level-item">
+                        <span class="title is-5">from</span>
+                        <div class="field p-3">
+                            <div class="field">
+                                <div class="select">
+                                    <select name="ts">
+                                        <option selected disabled>traffic source</option>
+                                        {% for ts in ts_list %}
+                                            <option value="{{ ts.id }}">
+                                                {{ ts.name }}
+                                                ({{ ts.binom_ts_id }} from {{ ts.binom.name }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="level-right" id="hidden_div_1">
@@ -388,7 +409,7 @@
                     <span class="icon-text">
                         <span class="icon">
                             <ion-icon class="has-text-link" size="large"
-                              name="cog-outline"></ion-icon>
+                                      name="cog-outline"></ion-icon>
                         </span>
                         <span class="subtitle ml-2">Rules Control</span>
                     </span>

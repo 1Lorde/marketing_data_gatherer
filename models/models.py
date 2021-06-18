@@ -263,6 +263,10 @@ class CampaignRule(db.Model):
     rule_id = Column(Integer, primary_key=True)
     conditions = Column(Integer)
     campaign_name = Column(String)
+
+    ts_id = db.Column(db.Integer, db.ForeignKey('traffic_source.id'), nullable=False)
+    ts = db.relationship('TrafficSource', backref=db.backref('templates', lazy=True))
+
     param1 = Column(String)
     sign1 = Column(String)
     value1 = Column(Float)
@@ -287,6 +291,10 @@ class SourceRule(db.Model):
     conditions = Column(Integer)
     source_name = Column(String)
     campaign_name = Column(String)
+
+    ts_id = db.Column(db.Integer, db.ForeignKey('traffic_source.id'), nullable=False)
+    ts = db.relationship('TrafficSource', backref=db.backref('templates1', lazy=True))
+
     param1 = Column(String)
     sign1 = Column(String)
     value1 = Column(Float)

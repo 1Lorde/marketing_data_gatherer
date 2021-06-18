@@ -475,8 +475,10 @@ def campaigns_add_rule():
         save_rule_to_db(rule)
         return redirect(url_for('campaigns_rules'))
 
+    ts_list = TrafficSource.query.all()
     return render_template('add_campaign_rule.html',
-                           form=None)
+                           form=None,
+                           ts_list=ts_list)
 
 
 @app.route('/campaigns/rules/delete/<rule_id>', methods=['GET', 'POST'])
@@ -502,8 +504,10 @@ def sources_add_rule():
         save_rule_to_db(rule)
         return redirect(url_for('sources_rules'))
 
+    ts_list = TrafficSource.query.all()
     return render_template('add_source_rule.html',
-                           form=None)
+                           form=None,
+                           ts_list=ts_list)
 
 
 @app.route('/sources/rules/delete/<rule_id>', methods=['GET', 'POST'])

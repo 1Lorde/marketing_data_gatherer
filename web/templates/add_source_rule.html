@@ -22,21 +22,22 @@
             <div class="column">
                 <div class="level-right">
                     <div class="level-item">
-                        <span class="title is-5">If <span class="has-text-info">source id</span> with name</span>
+                        <span class="title is-5">If <span class="has-text-info">source id</span> with</span>
                     </div>
 
                     <div class="level-item p-3">
                         <div class="field">
                             <div class="field">
                                 <div class="control">
-                                    <input id="name_input" name="name" class="input" type="text" placeholder="name" required>
+                                    <input id="name_input" name="name" class="input" type="text" placeholder="name"
+                                           required>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <label class="checkbox is-pulled-right pt-2">
-                        <input type="checkbox" id="all_checkbox" onclick="disableInput()">
+                        <input type="checkbox" id="all_sources_checkbox" onclick="disableSourceIdInput()">
                         All names
                     </label>
                 </div>
@@ -50,7 +51,33 @@
                         <div class="field">
                             <div class="field">
                                 <div class="control">
-                                    <input name="campaign_name" class="input" type="text" placeholder="name" required>
+                                    <input id="campaign_name_input" name="campaign_name" class="input" type="text" placeholder="name" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <label class="checkbox is-pulled-right pt-2">
+                        <input type="checkbox" id="all_campaigns_checkbox" onclick="disableCampaignInput()">
+                        All names
+                    </label>
+                </div>
+
+                <div class="level-right">
+                    <div class="level-item">
+                        <span class="title is-5">from</span>
+                        <div class="field p-3">
+                            <div class="field">
+                                <div class="select">
+                                    <select name="ts">
+                                        <option selected disabled>traffic source</option>
+                                        {% for ts in ts_list %}
+                                            <option value="{{ ts.id }}">
+                                                {{ ts.name }}
+                                                ({{ ts.binom_ts_id }} from {{ ts.binom.name }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -356,10 +383,16 @@
         </div>
 
         <script>
-            function disableInput() {
-                var cb = document.getElementById('all_checkbox').checked;
+            function disableSourceIdInput() {
+                var cb = document.getElementById('all_sources_checkbox').checked;
                 document.getElementById('name_input').disabled = cb;
                 document.getElementById('name_input').value = '';
+            }
+
+            function disableCampaignInput() {
+                var cb = document.getElementById('all_campaigns_checkbox').checked;
+                document.getElementById('campaign_name_input').disabled = cb;
+                document.getElementById('campaign_name_input').value = '';
             }
 
             function showDiv(element) {
@@ -403,7 +436,7 @@
                     <span class="icon-text">
                         <span class="icon">
                             <ion-icon class="has-text-link" size="large"
-                              name="cog-outline"></ion-icon>
+                                      name="cog-outline"></ion-icon>
                         </span>
                         <span class="subtitle ml-2">Rules Control</span>
                     </span>

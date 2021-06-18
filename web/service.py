@@ -60,6 +60,7 @@ def get_rule_fields():
         'conditions': request.form.get('conditions'),
         'name': request.form.get('name'),
         'campaign_name': request.form.get('campaign_name'),
+        'ts': request.form.get('ts'),
         'param1': request.form.get('param1'),
         'sign1': request.form.get('sign1'),
         'value1': request.form.get('value1'),

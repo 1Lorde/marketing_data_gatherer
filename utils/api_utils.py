@@ -9,7 +9,7 @@ from sqlalchemy.sql.expression import and_
 
 from gatherer.utils import is_push_house, is_ungads
 from models.models import Campaign, Source, DailyCampaign, CampaignRule, DailySource, SourceRule, db, PausedSource, \
-    PausedCampaign, Binom, TrafficSource, TrafficSourceCredentials
+    PausedCampaign, Binom, TrafficSource
 from utils.rules_utils import get_comparison_operator, get_campaign_action, get_source_action
 
 
@@ -515,35 +515,31 @@ class ApiUtils:
         sources = self.get_sources_statuses(sources, ts)
         return sources
 
-    def get_campaign_start_url(self, campaign_name, ts_id):
-        if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+    def get_campaign_start_url(self, campaign_name, ts: TrafficSource):
+        if is_push_house(ts):
             start_url = self.config['push_house_urls']['campaign_action']
-            api_key = self.config["api_keys"]["push_house"]
-
-            start_url = f'{start_url}{api_key}/1/{campaign_name}'
-        else:
+            start_url = f'{start_url}{ts.credentials.api_key}/1/{campaign_name}'
+        elif is_ungads(ts):
             start_url = self.config['ungads_urls']['campaign_action']
-            api_key = self.config["api_keys"]["ungads"]
-
-            start_url = start_url.replace('[API_KEY]', api_key)
+            start_url = start_url.replace('[API_KEY]', ts.credentials.api_key)
             start_url = start_url.replace('[CAMPAIGN_ID]', campaign_name)
             start_url += '/play'
+        else:
+            return None
 
         return start_url
 
-    def get_campaign_stop_url(self, campaign_name, ts_id):
-        if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+    def get_campaign_stop_url(self, campaign_name, ts):
+        if is_push_house(ts):
             stop_url = self.config['push_house_urls']['campaign_action']
-
-            api_key = self.config["api_keys"]["push_house"]
-            stop_url = f'{stop_url}{api_key}/0/{campaign_name}'
-        else:
+            stop_url = f'{stop_url}{ts.credentials.api_key}/0/{campaign_name}'
+        elif is_ungads(ts):
             stop_url = self.config['ungads_urls']['campaign_action']
-            api_key = self.config["api_keys"]["ungads"]
-
-            stop_url = stop_url.replace('[API_KEY]', api_key)
+            stop_url = stop_url.replace('[API_KEY]', ts.credentials.api_key)
             stop_url = stop_url.replace('[CAMPAIGN_ID]', campaign_name)
             stop_url += '/pause'
+        else:
+            return None
 
         return stop_url
 
@@ -571,11 +567,11 @@ class ApiUtils:
             logging.info(f'Cleared blacklist for campaign ' + campaign_name)
             logging.debug(response.json())
 
-    def start_campaign(self, campaign_name, ts_id):
+    def start_campaign(self, campaign_name, ts: TrafficSource):
         try:
-            url = self.get_campaign_start_url(campaign_name, ts_id)
+            url = self.get_campaign_start_url(campaign_name, ts)
             paused = PausedCampaign.query.filter_by(campaign_name=campaign_name,
-                                                    traffic_source=ts_id).first()
+                                                    traffic_source=ts.binom_ts_id).first()
             if not paused:
                 return
 
@@ -584,7 +580,7 @@ class ApiUtils:
             logging.info(f"Applying rule for campaign {campaign_name}")
 
             PausedCampaign.query.filter_by(campaign_name=campaign_name,
-                                           traffic_source=ts_id).delete()
+                                           traffic_source=ts.binom_ts_id).delete()
             db.session.commit()
         except HTTPError as http_err:
             logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
@@ -594,18 +590,18 @@ class ApiUtils:
             logging.info('Resumed campaign ' + campaign_name)
             logging.debug(response.content)
 
-    def stop_campaign(self, campaign_name, ts_id):
+    def stop_campaign(self, campaign_name, ts: TrafficSource):
         try:
-            url = self.get_campaign_stop_url(campaign_name, ts_id)
+            url = self.get_campaign_stop_url(campaign_name, ts)
             paused = PausedCampaign.query.filter_by(campaign_name=campaign_name,
-                                                    traffic_source=ts_id).first()
+                                                    traffic_source=ts.binom_ts_id).first()
             if paused:
                 return
 
             response = requests.get(url)
             response.raise_for_status()
 
-            db.session.add(PausedCampaign(campaign_name, ts_id))
+            db.session.add(PausedCampaign(campaign_name, ts.binom_ts_id))
             db.session.commit()
         except HTTPError as http_err:
             logging.error(f'HTTP error occurred: {http_err}')  # Python 3.6
@@ -615,41 +611,39 @@ class ApiUtils:
             logging.info('Paused campaign ' + campaign_name)
             logging.debug(response.content)
 
-    def get_source_blacklist_url(self, campaign_name, ts_id):
-        if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+    def get_source_blacklist_url(self, campaign_name, ts: TrafficSource):
+        if is_push_house(ts):
             black_url = self.config['push_house_urls']['source_action']
-
-            api_key = self.config["api_keys"]["push_house"]
-            black_url = f'{black_url}{api_key}/black/{campaign_name}'
-        else:
+            black_url = f'{black_url}{ts.credentials.api_key}/black/{campaign_name}'
+        elif is_ungads(ts):
             black_url = self.config['ungads_urls']['source_black']
-
-            api_key = self.config["api_keys"]["ungads"]
-            black_url = black_url.replace('[API_KEY]', api_key)
+            black_url = black_url.replace('[API_KEY]', ts.credentials.api_key)
             black_url = black_url.replace('[CAMPAIGN_ID]', campaign_name)
+        else:
+            return None
 
         return black_url
 
-    def add_sources_to_blacklist(self, campaign_name, sources_names, ts_id):
+    def add_sources_to_blacklist(self, campaign_name, sources_names, ts: TrafficSource):
         response = None
         is_same_sources = None
         try:
-            url = self.get_source_blacklist_url(campaign_name, ts_id)
+            url = self.get_source_blacklist_url(campaign_name, ts)
 
             sources_names = [int(item) for item in sources_names]
 
-            if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+            if is_push_house(ts):
                 already_blacklisted = PausedSource.query.filter_by(campaign_name=campaign_name,
-                                                                   traffic_source=ts_id).all()
+                                                                   traffic_source=ts.binom_ts_id).all()
 
                 blacklisted = []
                 for source_name in sources_names:
                     paused = PausedSource.query.filter_by(source_name=source_name,
                                                           campaign_name=campaign_name,
-                                                          traffic_source=ts_id).first()
+                                                          traffic_source=ts.binom_ts_id).first()
                     if not paused:
-                        blacklisted.append(PausedSource(source_name, campaign_name, ts_id))
-                        db.session.add(PausedSource(source_name, campaign_name, ts_id))
+                        blacklisted.append(PausedSource(source_name, campaign_name, ts.binom_ts_id))
+                        db.session.add(PausedSource(source_name, campaign_name, ts.binom_ts_id))
                         db.session.commit()
 
                 if len(blacklisted) == 0:
@@ -661,7 +655,7 @@ class ApiUtils:
                 data = {'list': str(blacklisted + already_blacklisted).replace('[', '').replace(']', '')}
                 response = requests.post(url, data=data)
                 response.raise_for_status()
-            else:
+            elif is_ungads(ts):
                 blacklisted = requests.get(url)
                 if blacklisted.text:
                     sources = '[' + blacklisted.text + ']'
@@ -687,14 +681,14 @@ class ApiUtils:
                 logging.info(f'Source {sources_names} from campaign {campaign_name} added to blacklist')
                 logging.debug(response.text)
 
-    def remove_sources_from_blacklist(self, campaign_name, sources_names, ts_id):
+    def remove_sources_from_blacklist(self, campaign_name, sources_names, ts: TrafficSource):
         response = None
         try:
-            url = self.get_source_blacklist_url(campaign_name, ts_id)
+            url = self.get_source_blacklist_url(campaign_name, ts)
 
-            if int(ts_id) == self.config['traffic_source_ids']['push_house']:
+            if is_push_house(ts):
                 already_blacklisted = PausedSource.query.filter_by(campaign_name=campaign_name,
-                                                                   traffic_source=ts_id).all()
+                                                                   traffic_source=ts.binom_ts_id).all()
                 already_blacklisted = list((source.source_name for source in already_blacklisted))
 
                 for source_name in sources_names:
@@ -702,7 +696,7 @@ class ApiUtils:
                         already_blacklisted.remove(source_name)
                         PausedSource.query.filter_by(source_name=source_name,
                                                      campaign_name=campaign_name,
-                                                     traffic_source=ts_id).delete()
+                                                     traffic_source=ts.binom_ts_id).delete()
                         db.session.commit()
 
                 if len(already_blacklisted) == 0:
@@ -712,7 +706,7 @@ class ApiUtils:
                 data = {'list': str(already_blacklisted).replace('[', '').replace(']', '')}
                 response = requests.post(url, data=data)
                 response.raise_for_status()
-            else:
+            elif is_ungads(ts):
                 sources_names = [int(item) for item in sources_names]
 
                 blacklisted = requests.get(url)
@@ -744,20 +738,35 @@ class ApiUtils:
                 campaigns = DailyCampaign.query.filter(
                     and_(
                         DailyCampaign.name == rule.campaign_name,
-                        DailyCampaign.fetched_at >= now - timedelta(days=rule.days))
+                        DailyCampaign.fetched_at >= now - timedelta(days=rule.days),
+                        DailyCampaign.traffic_source == rule.ts.binom_ts_id,
+                        DailyCampaign.binom_source == rule.ts.binom.name)
                 ).all()
 
                 current_campaigns = Campaign.query.filter(
                     and_(
                         Campaign.name == rule.campaign_name,
-                        Campaign.fetched_at >= now - timedelta(days=rule.days))
+                        Campaign.fetched_at >= now - timedelta(days=rule.days),
+                        Campaign.traffic_source == rule.ts.binom_ts_id,
+                        Campaign.binom_source == rule.ts.binom.name
+                    )
                 ).all()
             else:
                 campaigns = DailyCampaign.query.filter(
-                    DailyCampaign.fetched_at >= now - timedelta(days=rule.days)).all()
+                    and_(
+                        DailyCampaign.fetched_at >= now - timedelta(days=rule.days),
+                        DailyCampaign.traffic_source == rule.ts.binom_ts_id,
+                        DailyCampaign.binom_source == rule.ts.binom.name
+                    )
+                ).all()
 
                 current_campaigns = Campaign.query.filter(
-                    Campaign.fetched_at >= now - timedelta(days=rule.days)).all()
+                    and_(
+                        Campaign.fetched_at >= now - timedelta(days=rule.days),
+                        Campaign.traffic_source == rule.ts.binom_ts_id,
+                        Campaign.binom_source == rule.ts.binom.name
+                    )
+                ).all()
 
             campaigns = campaigns + current_campaigns
 
@@ -772,10 +781,37 @@ class ApiUtils:
 
                 for campaign in campaigns:
                     if campaign.name == name:
+                        if campaign_stat.binom_source == 'undefined':
+                            campaign_stat.binom_source = campaign.binom_source
+
                         campaign_stat.traffic_source = campaign.traffic_source
                         campaign_stat.revenue += campaign.revenue
+                        campaign_stat.binom_clicks += campaign.binom_clicks
+                        campaign_stat.lp_clicks += campaign.lp_clicks
+                        campaign_stat.leads += campaign.leads
+
                         campaign_stat.cost += campaign.cost
-                        campaign_stat.profit += campaign.profit
+                        campaign_stat.clicks += campaign.clicks
+                        campaign_stat.impressions += campaign.impressions
+
+                    if campaign_stat.leads != 0:
+                        campaign_stat.payout = campaign_stat.revenue / campaign_stat.leads
+
+                    campaign_stat.profit = campaign_stat.revenue - campaign_stat.cost
+
+                    if campaign_stat.clicks != 0:
+                        campaign_stat.cpc = campaign_stat.cost / campaign_stat.clicks
+                        campaign_stat.epc = campaign_stat.revenue / campaign_stat.clicks
+
+                    if campaign_stat.binom_clicks != 0:
+                        campaign_stat.lp_ctr = campaign_stat.lp_clicks / campaign_stat.binom_clicks * 100
+
+                    if campaign_stat.cost != 0:
+                        campaign_stat.roi = campaign_stat.profit / campaign_stat.cost * 100
+
+                    if campaign_stat.impressions != 0:
+                        campaign_stat.ctr = campaign_stat.clicks / campaign_stat.impressions * 100
+                        campaign_stat.cpm = campaign_stat.cost / campaign_stat.impressions * 1000
 
                 campaigns_stats_list.append(campaign_stat)
 
@@ -790,7 +826,14 @@ class ApiUtils:
 
                 if all(boolean_list):
                     action = get_campaign_action(getattr(rule, 'action'), self)
-                    action(campaign.name, campaign.traffic_source)
+                    binom = Binom.query.filter_by(name=campaign.binom_source).first()
+                    ts = TrafficSource.query.filter(
+                        and_(
+                            TrafficSource.binom_ts_id == campaign.traffic_source,
+                            TrafficSource.binom_id == binom.id
+                        )
+                    ).first()
+                    action(campaign.name, ts)
 
     def check_source_rules(self):
         rules = SourceRule.query.all()
@@ -798,18 +841,71 @@ class ApiUtils:
 
         for rule in rules:
             if rule.source_name != '*':
-                sources_list = DailySource.query.filter(
-                    and_(
-                        Source.name == rule.source_name,
-                        Source.campaign_name == rule.campaign_name)).all()
+                if rule.campaign_name != '*':
+                    sources_list = DailySource.query.filter(
+                        and_(
+                            DailySource.name == rule.source_name,
+                            DailySource.campaign_name == rule.campaign_name,
+                            DailySource.traffic_source == rule.ts.binom_ts_id,
+                            DailySource.binom_source == rule.ts.binom.name
+                        )
+                    ).all()
 
-                current_sources = Source.query.filter(
-                    and_(
-                        Source.name == rule.source_name,
-                        Source.campaign_name == rule.campaign_name)).all()
+                    current_sources = Source.query.filter(
+                        and_(
+                            Source.name == rule.source_name,
+                            Source.campaign_name == rule.campaign_name,
+                            Source.traffic_source == rule.ts.binom_ts_id,
+                            Source.binom_source == rule.ts.binom.name
+                        )
+                    ).all()
+                else:
+                    sources_list = DailySource.query.filter(
+                        and_(
+                            DailySource.name == rule.source_name,
+                            DailySource.traffic_source == rule.ts.binom_ts_id,
+                            DailySource.binom_source == rule.ts.binom.name
+                        )
+                    ).all()
+
+                    current_sources = Source.query.filter(
+                        and_(
+                            Source.name == rule.source_name,
+                            Source.traffic_source == rule.ts.binom_ts_id,
+                            Source.binom_source == rule.ts.binom.name
+                        )
+                    ).all()
             else:
-                sources_list = DailySource.query.filter(Source.campaign_name == rule.campaign_name).all()
-                current_sources = Source.query.filter(Source.campaign_name == rule.campaign_name).all()
+                if rule.campaign_name != '*':
+                    sources_list = DailySource.query.filter(
+                        and_(
+                            DailySource.campaign_name == rule.campaign_name,
+                            DailySource.traffic_source == rule.ts.binom_ts_id,
+                            DailySource.binom_source == rule.ts.binom.name
+                        )
+                    ).all()
+
+                    current_sources = Source.query.filter(
+                        and_(
+                            Source.campaign_name == rule.campaign_name,
+                            Source.traffic_source == rule.ts.binom_ts_id,
+                            Source.binom_source == rule.ts.binom.name
+                        )
+                    ).all()
+                else:
+                    sources_list = DailySource.query.filter(
+                        and_(
+                            DailySource.traffic_source == rule.ts.binom_ts_id,
+                            DailySource.binom_source == rule.ts.binom.name
+                        )
+                    ).all()
+
+                    current_sources = Source.query.filter(
+                        and_(
+                            Source.traffic_source == rule.ts.binom_ts_id,
+                            Source.binom_source == rule.ts.binom.name
+                        )
+                    ).all()
 
             sources_list = sources_list + current_sources
 
@@ -833,6 +929,7 @@ class ApiUtils:
 
                 for source in source_list:
                     source_stat.traffic_source = source.traffic_source
+                    source_stat.binom_source = source.binom_source
                     source_stat.revenue += source.revenue
                     source_stat.binom_clicks += source.binom_clicks
                     source_stat.lp_clicks += source.lp_clicks
@@ -867,6 +964,7 @@ class ApiUtils:
             if len(sources_stats_list) != 0:
                 campaign_name = sources_stats_list[0].campaign_name
                 traffic_source = sources_stats_list[0].traffic_source
+                binom_source = sources_stats_list[0].binom_source
 
             for source in sources_stats_list:
                 boolean_list = []
@@ -884,4 +982,10 @@ class ApiUtils:
                 # logging.info(f"Applying rule for source id {rule.source_name} for campaign {rule.campaign_name}")
 
                 action = get_source_action(getattr(rule, 'action'), self)
-                action(campaign_name, appropriate_sources, traffic_source)
+                ts = TrafficSource.query.filter(
+                    and_(
+                        TrafficSource.binom_ts_id == traffic_source,
+                        TrafficSource.binom.name == binom_source
+                    )
+                ).first()
+                action(campaign_name, appropriate_sources, ts)

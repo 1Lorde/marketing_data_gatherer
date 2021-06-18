@@ -112,23 +112,23 @@ if __name__ == '__main__':
     init_logger()
     init_file_logger()
 
-    # with app.test_request_context():
-    #     db.init_app(app)
-    ##     remove_daily_data()
-    #
-    #     binoms = Binom.query.all()
-    #     for binom in binoms:
-    #         ts_list = TrafficSource.query.filter_by(binom_id=binom.id).all()
-    #         for ts in ts_list:
-    #             extract_n_days_job(ts, binom, 30)
+    with app.test_request_context():
+        db.init_app(app)
+    #     remove_daily_data()
 
-    schedule.every(2).minutes.do(live_job)
-    schedule.every(5).minutes.do(check_rules_job)
-    schedule.every().day.at("04:00").do(daily_job)
+        binoms = Binom.query.all()
+        for binom in binoms:
+            ts_list = TrafficSource.query.filter_by(binom_id=binom.id).all()
+            for ts in ts_list:
+                extract_n_days_job(ts, binom, 30)
 
-    logging.debug('Run data gathering script')
-    live_job()
-    check_rules_job()
-    while 1:
-        schedule.run_pending()
-        time.sleep(1)
+    # schedule.every(2).minutes.do(live_job)
+    # schedule.every(5).minutes.do(check_rules_job)
+    # schedule.every().day.at("04:00").do(daily_job)
+
+    # logging.debug('Run data gathering script')
+    # live_job()
+    # check_rules_job()
+    # while 1:
+    #     schedule.run_pending()
+    #     time.sleep(1)

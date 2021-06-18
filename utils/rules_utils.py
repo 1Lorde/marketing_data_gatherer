@@ -6,6 +6,7 @@ from models.models import CampaignRule, db, SourceRule
 def set_campaign_rule_fields(rule_dict):
     campaign_rule = CampaignRule()
     campaign_rule.conditions = rule_dict['conditions']
+    campaign_rule.ts_id = rule_dict['ts']
     campaign_rule.param1 = rule_dict['param1']
     campaign_rule.sign1 = rule_dict['sign1']
     campaign_rule.param2 = rule_dict['param2']
@@ -47,7 +48,7 @@ def set_campaign_rule_fields(rule_dict):
 def set_source_rule_fields(rule_dict):
     source_rule = SourceRule()
     source_rule.conditions = rule_dict['conditions']
-    source_rule.campaign_name = rule_dict['campaign_name']
+    source_rule.ts_id = rule_dict['ts']
     source_rule.param1 = rule_dict['param1']
     source_rule.sign1 = rule_dict['sign1']
     source_rule.param2 = rule_dict['param2']
@@ -62,6 +63,10 @@ def set_source_rule_fields(rule_dict):
     source_rule.source_name = rule_dict['name']
     if not source_rule.source_name or source_rule.source_name == '*':
         source_rule.source_name = '*'
+
+    source_rule.campaign_name = rule_dict['campaign_name']
+    if not source_rule.campaign_name or source_rule.campaign_name == '*':
+        source_rule.campaign_name = '*'
 
     try:
         source_rule.value1 = float(rule_dict['value1'])
