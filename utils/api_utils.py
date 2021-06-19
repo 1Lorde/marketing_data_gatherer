@@ -824,7 +824,7 @@ class ApiUtils:
                     boolean_list.append(operator(campaign_value, rule_value))
 
                 if all(boolean_list):
-                    logging.info(f"Applying Campaigns Rule with ID:{rule.id}")
+                    logging.info(f"Applying Campaigns Rule with ID:{rule.rule_id}")
                     action = get_campaign_action(getattr(rule, 'action'), self)
                     binom = Binom.query.filter_by(name=campaign.binom_source).first()
                     ts = TrafficSource.query.filter(
@@ -979,7 +979,7 @@ class ApiUtils:
                     appropriate_sources.append(source.name)
 
             if len(appropriate_sources) != 0:
-                logging.info(f"Applying SourceIds Rule with ID:{rule.id}")
+                logging.info(f"Applying SourceIds Rule with ID:{rule.rule_id}")
                 action = get_source_action(getattr(rule, 'action'), self)
 
                 binom = Binom.query.filter_by(name=binom_source).first()
