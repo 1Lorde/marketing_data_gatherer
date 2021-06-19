@@ -19,37 +19,36 @@
 {% block message_body %}
     <div class="container">
         {% if rules %}
-            <ol>
-                {% for rule in rules %}
-                    <div class="box block subtitle is-6">
-                        <li class="ml-3">
+            {% for rule in rules %}
+                <div class="box block subtitle is-6">
+                    <div class="columns">
+                        <div class="column is-2">
+                            <span class="tag is-medium is-black">
+                                Rule ID: {{ rule.rule_id }}
+                            </span>
+                        </div>
+                        <div class="column is-7 has-text-right">
                             <span>
                                 If
                                 <span class="has-text-link">campaign</span>
                                 with name
-                                <span class="tag is-medium is-link is-rounded">
+                                <span class="tag is-medium is-link is-rounded m-1">
                                     <strong>{{ rule.campaign_name }}</strong>
                                 </span>
                                 from
-                                <span class="tag is-medium is-warning is-rounded">
+                                <span class="tag is-medium is-warning is-rounded m-1">
                                     {{ rule.ts.name }}
                                     (<strong>ID:{{ rule.ts.binom_ts_id }}</strong>)
                                 </span>
                                 from
-                                <span class="tag is-medium is-warning is-rounded">
+                                <span class="tag is-medium is-warning is-rounded m-1">
                                     {{ rule.ts.binom.name }}
                                 </span>
                             </span>
-
-                            <a class="button is-small is-danger is-pulled-right"
-                               href="{{ url_for('campaigns_delete_rule', rule_id=rule.rule_id) }}">
-                                <ion-icon name="trash-outline"></ion-icon>
-                            </a>
-
                             <p class="mt-3">
                                 has
                                 {% for i in range(rule.conditions) %}
-                                    <span class="tag is-primary is-light is-medium is-rounded">
+                                    <span class="tag is-primary is-light is-medium is-rounded m-1">
                                         <strong>{{ rule['param'+(i + 1)|string] }} {{ rule['sign'+(i + 1)|string] }} {{ rule['value'+(i + 1)|string] }}</strong>
                                     </span>
                                     {% if i != rule.conditions - 1 %}
@@ -62,14 +61,21 @@
                                 <span>
                                     then
                                     <strong>
-                                        <span class="tag is-medium is-rounded is-white">{{ rule.action }}</span>
+                                        <span class="tag is-medium is-rounded is-white m-1">{{ rule.action }}</span>
                                     </strong>.
                                 </span>
                             </p>
-                        </li>
+                        </div>
+                        <div class="column has-text-right">
+                            <a class="button is-small is-danger"
+                               href="{{ url_for('campaigns_delete_rule', rule_id=rule.rule_id) }}">
+                                <ion-icon name="trash-outline"></ion-icon>
+                            </a>
+                        </div>
                     </div>
-                {% endfor %}
-            </ol>
+                </div>
+            {% endfor %}
+            </ul>
         {% else %}
             <p>No rules here</p>
         {% endif %}

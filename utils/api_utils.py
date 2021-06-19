@@ -577,7 +577,6 @@ class ApiUtils:
 
             response = requests.get(url)
             response.raise_for_status()
-            logging.info(f"Applying rule for campaign {campaign_name}")
 
             PausedCampaign.query.filter_by(campaign_name=campaign_name,
                                            ts_id=ts.id).delete()
@@ -587,7 +586,7 @@ class ApiUtils:
         except Exception as err:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
-            logging.info('Resumed campaign ' + campaign_name)
+            logging.info(f'Resumed campaign {campaign_name} from {ts.name} (ID:{ts.binom_ts_id}) from {ts.binom.name}')
             logging.debug(response.content)
 
     def stop_campaign(self, campaign_name, ts: TrafficSource):
@@ -608,7 +607,7 @@ class ApiUtils:
         except Exception as err:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
-            logging.info('Paused campaign ' + campaign_name)
+            logging.info(f'Paused campaign {campaign_name} from {ts.name} (ID:{ts.binom_ts_id}) from {ts.binom.name}')
             logging.debug(response.content)
 
     def get_source_blacklist_url(self, campaign_name, ts: TrafficSource):
@@ -825,6 +824,7 @@ class ApiUtils:
                     boolean_list.append(operator(campaign_value, rule_value))
 
                 if all(boolean_list):
+                    logging.info(f"Applying Campaigns Rule with ID:{rule.id}")
                     action = get_campaign_action(getattr(rule, 'action'), self)
                     binom = Binom.query.filter_by(name=campaign.binom_source).first()
                     ts = TrafficSource.query.filter(
@@ -979,7 +979,7 @@ class ApiUtils:
                     appropriate_sources.append(source.name)
 
             if len(appropriate_sources) != 0:
-                # logging.info(f"Applying rule for source id {rule.source_name} for campaign {rule.campaign_name}")
+                logging.info(f"Applying SourceIds Rule with ID:{rule.id}")
                 action = get_source_action(getattr(rule, 'action'), self)
 
                 binom = Binom.query.filter_by(name=binom_source).first()

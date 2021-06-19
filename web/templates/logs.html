@@ -7,18 +7,20 @@
 {% block content %}
     <div class="container box table_div">
         {% if logs|length > 0 %}
-            <ul>
-                {% for log in logs %}
-                    <div class="block subtitle is-5">
-                        <li>
+            {% for log in logs %}
+                <div class="block subtitle is-6">
+                    <div class="columns">
+                        <div class="column is-1">
                             {% set record = log.split('-') %}
-                            <span class="tag is-medium is-dark is-rounded">{{ record[0] }}</span>
-                            <span class="tag is-medium is-light is-rounded">{{ record[1] }}</span>
-                            <span>&nbsp;&nbsp;{{ record[2] }}</span>
-                        </li>
+                            <p class="tag is-medium is-dark is-rounded mb-2">{{ record[0] }}</p>
+                            <p class="tag is-medium is-light is-rounded">{{ record[1] }}</p>
+                        </div>
+                        <div class="column">
+                            <span>{{ record[2] }}</span>
+                        </div>
                     </div>
-                {% endfor %}
-            </ul>
+                </div>
+            {% endfor %}
         {% else %}
             <p>No logs here</p>
         {% endif %}
