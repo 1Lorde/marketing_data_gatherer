@@ -29,7 +29,8 @@
                         <div class="field">
                             <div class="field">
                                 <div class="control">
-                                    <input id="name_input" name="name" class="input" type="text" placeholder="name"
+                                    <input id="name_input" name="name" class="input is-small" type="text"
+                                           placeholder="name"
                                            required>
                                 </div>
                             </div>
@@ -51,7 +52,8 @@
                         <div class="field">
                             <div class="field">
                                 <div class="control">
-                                    <input id="campaign_name_input" name="campaign_name" class="input" type="text" placeholder="name" required>
+                                    <input id="campaign_name_input" name="campaign_name" class="input is-small"
+                                           type="text" placeholder="name" required>
                                 </div>
                             </div>
                         </div>
@@ -68,7 +70,7 @@
                         <span class="title is-5">from</span>
                         <div class="field p-3">
                             <div class="field">
-                                <div class="select">
+                                <div class="select is-small">
                                     <select name="ts">
                                         <option selected disabled>traffic source</option>
                                         {% for ts in ts_list %}
@@ -84,240 +86,451 @@
                     </div>
                 </div>
 
-                <div class="level-right" id="hidden_div_1">
-                    <div class="level-item">
-                        <p class="title is-5">has</p>
-                    </div>
-                    <div class="level-item p-3">
-                        <div class="field">
-                            <div class="control">
-                                <div class="select">
-                                    <select name="param1">
-                                        <option selected disabled>field</option>
-                                        <option value="profit">Profit</option>
-                                        <option value="clicks">Clicks</option>
-                                        <option value="binom_clicks">Binom clicks</option>
-                                        <option value="impressions">Impressions</option>
-                                        <option value="lp_clicks">LP clicks</option>
-                                        <option value="ctr">CTR</option>
-                                        <option value="lp_ctr">LP CTR</option>
-                                        <option value="leads">Leads</option>
-                                        <option value="cost">Cost</option>
-                                        <option value="revenue">Revenue</option>
-                                        <option value="profit">Profit</option>
-                                        <option value="roi">ROI</option>
-                                        <option value="payout">Payout</option>
-                                        <option value="cpc">CPC</option>
-                                        <option value="cpm">CPM</option>
-                                        <option value="epc">EPC</option>
-                                    </select>
-                                </div>
-                            </div>
+                <div id="hidden_div_1">
+                    <hr/>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <p class="title is-5">has</p>
                         </div>
-                    </div>
-                    <div class="level-item p-3">
-                        <div class="field">
-                            <div class="control">
-                                <div class="select">
-                                    <select name="sign1">
-                                        <option selected disabled>operator</option>
-                                        <option value=">">></option>
-                                        <option value="<"><</option>
-                                        <option value="<="><=</option>
-                                        <option value=">=">>=</option>
-                                        <option value="==">==</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="level-item p-3">
-                        <div class="field">
+                        <div class="level-item p-3">
                             <div class="field">
                                 <div class="control">
-                                    <input name="value1" class="input" type="number" step="0.01"
-                                           placeholder="value" required>
+                                    <div class="select is-small">
+                                        <select name="param1">
+                                            <option selected disabled>field</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="clicks">Clicks</option>
+                                            <option value="binom_clicks">Binom clicks</option>
+                                            <option value="impressions">Impressions</option>
+                                            <option value="lp_clicks">LP clicks</option>
+                                            <option value="ctr">CTR</option>
+                                            <option value="lp_ctr">LP CTR</option>
+                                            <option value="leads">Leads</option>
+                                            <option value="cost">Cost</option>
+                                            <option value="revenue">Revenue</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="roi">ROI</option>
+                                            <option value="payout">Payout</option>
+                                            <option value="cpc">CPC</option>
+                                            <option value="cpm">CPM</option>
+                                            <option value="epc">EPC</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item p-3">
+                            <div class="field">
+                                <div class="control">
+                                    <div class="select is-small">
+                                        <select name="sign1">
+                                            <option selected disabled>operator</option>
+                                            <option value=">">></option>
+                                            <option value="<"><</option>
+                                            <option value="<="><=</option>
+                                            <option value=">=">>=</option>
+                                            <option value="==">==</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item p-3">
+                            <div class="field">
+                                <div class="field">
+                                    <div class="control">
+                                        <input name="value1" class="input is-small" type="number" step="0.01"
+                                               placeholder="value" oninput="clearField('factor1')">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <div class="level-right">
+                        <div class="level-item">
+                            <p class="title is-5">or</p>
+                        </div>
+
+                        <div class="level-item p-2">
+                            <div class="field">
+                                <div class="field">
+                                    <div class="control">
+                                        <input name="factor1" class="input is-small" type="number" step="0.1"
+                                               placeholder="factor" oninput="clearField('value1')">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="level-item">
+                            <p class="title is-5">✕</p>
+                        </div>
+
+                        <div class="level-item p-3">
+                            <div class="field">
+                                <div class="control">
+                                    <div class="select is-small">
+                                        <select name="factor_var1">
+                                            <option selected disabled>field</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="clicks">Clicks</option>
+                                            <option value="binom_clicks">Binom clicks</option>
+                                            <option value="impressions">Impressions</option>
+                                            <option value="lp_clicks">LP clicks</option>
+                                            <option value="ctr">CTR</option>
+                                            <option value="lp_ctr">LP CTR</option>
+                                            <option value="leads">Leads</option>
+                                            <option value="cost">Cost</option>
+                                            <option value="revenue">Revenue</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="roi">ROI</option>
+                                            <option value="payout">Payout</option>
+                                            <option value="cpc">CPC</option>
+                                            <option value="cpm">CPM</option>
+                                            <option value="epc">EPC</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr/>
                 </div>
 
-                <div class="level-right" id="hidden_div_2">
-                    <div class="level-item">
-                        <p class="title is-5">has</p>
-                    </div>
-                    <div class="level-item p-3">
-                        <div class="field">
-                            <div class="control">
-                                <div class="select">
-                                    <select name="param2">
-                                        <option selected disabled>field</option>
-                                        <option value="profit">Profit</option>
-                                        <option value="clicks">Clicks</option>
-                                        <option value="binom_clicks">Binom clicks</option>
-                                        <option value="impressions">Impressions</option>
-                                        <option value="lp_clicks">LP clicks</option>
-                                        <option value="ctr">CTR</option>
-                                        <option value="lp_ctr">LP CTR</option>
-                                        <option value="leads">Leads</option>
-                                        <option value="cost">Cost</option>
-                                        <option value="revenue">Revenue</option>
-                                        <option value="profit">Profit</option>
-                                        <option value="roi">ROI</option>
-                                        <option value="payout">Payout</option>
-                                        <option value="cpc">CPC</option>
-                                        <option value="cpm">CPM</option>
-                                        <option value="epc">EPC</option>
-                                    </select>
-                                </div>
-                            </div>
+                <div id="hidden_div_2">
+                    <hr/>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <p class="title is-5">has</p>
                         </div>
-                    </div>
-                    <div class="level-item p-3">
-                        <div class="field">
-                            <div class="control">
-                                <div class="select">
-                                    <select name="sign2">
-                                        <option selected disabled>operator</option>
-                                        <option value=">">></option>
-                                        <option value="<"><</option>
-                                        <option value="<="><=</option>
-                                        <option value=">=">>=</option>
-                                        <option value="==">==</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="level-item p-3">
-                        <div class="field">
+                        <div class="level-item p-3">
                             <div class="field">
                                 <div class="control">
-                                    <input name="value2" class="input" type="number" step="0.01"
-                                           value="" placeholder="value">
+                                    <div class="select is-small">
+                                        <select name="param2">
+                                            <option selected disabled>field</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="clicks">Clicks</option>
+                                            <option value="binom_clicks">Binom clicks</option>
+                                            <option value="impressions">Impressions</option>
+                                            <option value="lp_clicks">LP clicks</option>
+                                            <option value="ctr">CTR</option>
+                                            <option value="lp_ctr">LP CTR</option>
+                                            <option value="leads">Leads</option>
+                                            <option value="cost">Cost</option>
+                                            <option value="revenue">Revenue</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="roi">ROI</option>
+                                            <option value="payout">Payout</option>
+                                            <option value="cpc">CPC</option>
+                                            <option value="cpm">CPM</option>
+                                            <option value="epc">EPC</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item p-3">
+                            <div class="field">
+                                <div class="control">
+                                    <div class="select is-small">
+                                        <select name="sign2">
+                                            <option selected disabled>operator</option>
+                                            <option value=">">></option>
+                                            <option value="<"><</option>
+                                            <option value="<="><=</option>
+                                            <option value=">=">>=</option>
+                                            <option value="==">==</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item p-3">
+                            <div class="field">
+                                <div class="field">
+                                    <div class="control">
+                                        <input name="value2" class="input is-small" type="number" step="0.01"
+                                               placeholder="value" oninput="clearField('factor2')">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <div class="level-right">
+                        <div class="level-item">
+                            <p class="title is-5">or</p>
+                        </div>
+
+                        <div class="level-item p-2">
+                            <div class="field">
+                                <div class="field">
+                                    <div class="control">
+                                        <input name="factor2" class="input is-small" type="number" step="0.1"
+                                               placeholder="factor" oninput="clearField('value2')">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="level-item">
+                            <p class="title is-5">✕</p>
+                        </div>
+
+                        <div class="level-item p-3">
+                            <div class="field">
+                                <div class="control">
+                                    <div class="select is-small">
+                                        <select name="factor_var2">
+                                            <option selected disabled>field</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="clicks">Clicks</option>
+                                            <option value="binom_clicks">Binom clicks</option>
+                                            <option value="impressions">Impressions</option>
+                                            <option value="lp_clicks">LP clicks</option>
+                                            <option value="ctr">CTR</option>
+                                            <option value="lp_ctr">LP CTR</option>
+                                            <option value="leads">Leads</option>
+                                            <option value="cost">Cost</option>
+                                            <option value="revenue">Revenue</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="roi">ROI</option>
+                                            <option value="payout">Payout</option>
+                                            <option value="cpc">CPC</option>
+                                            <option value="cpm">CPM</option>
+                                            <option value="epc">EPC</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr/>
                 </div>
 
-                <div class="level-right" id="hidden_div_3">
-                    <div class="level-item">
-                        <p class="title is-5">has</p>
-                    </div>
-                    <div class="level-item p-3">
-                        <div class="field">
-                            <div class="control">
-                                <div class="select">
-                                    <select name="param3">
-                                        <option selected disabled>field</option>
-                                        <option value="profit">Profit</option>
-                                        <option value="clicks">Clicks</option>
-                                        <option value="binom_clicks">Binom clicks</option>
-                                        <option value="impressions">Impressions</option>
-                                        <option value="lp_clicks">LP clicks</option>
-                                        <option value="ctr">CTR</option>
-                                        <option value="lp_ctr">LP CTR</option>
-                                        <option value="leads">Leads</option>
-                                        <option value="cost">Cost</option>
-                                        <option value="revenue">Revenue</option>
-                                        <option value="profit">Profit</option>
-                                        <option value="roi">ROI</option>
-                                        <option value="payout">Payout</option>
-                                        <option value="cpc">CPC</option>
-                                        <option value="cpm">CPM</option>
-                                        <option value="epc">EPC</option>
-                                    </select>
-                                </div>
-                            </div>
+                <div id="hidden_div_3">
+                    <hr/>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <p class="title is-5">has</p>
                         </div>
-                    </div>
-                    <div class="level-item p-3">
-                        <div class="field">
-                            <div class="control">
-                                <div class="select">
-                                    <select name="sign3">
-                                        <option selected disabled>operator</option>
-                                        <option value=">">></option>
-                                        <option value="<"><</option>
-                                        <option value="<="><=</option>
-                                        <option value=">=">>=</option>
-                                        <option value="==">==</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="level-item p-3">
-                        <div class="field">
+                        <div class="level-item p-3">
                             <div class="field">
                                 <div class="control">
-                                    <input name="value3" class="input" type="number" step="0.01"
-                                           placeholder="value">
+                                    <div class="select is-small">
+                                        <select name="param3">
+                                            <option selected disabled>field</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="clicks">Clicks</option>
+                                            <option value="binom_clicks">Binom clicks</option>
+                                            <option value="impressions">Impressions</option>
+                                            <option value="lp_clicks">LP clicks</option>
+                                            <option value="ctr">CTR</option>
+                                            <option value="lp_ctr">LP CTR</option>
+                                            <option value="leads">Leads</option>
+                                            <option value="cost">Cost</option>
+                                            <option value="revenue">Revenue</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="roi">ROI</option>
+                                            <option value="payout">Payout</option>
+                                            <option value="cpc">CPC</option>
+                                            <option value="cpm">CPM</option>
+                                            <option value="epc">EPC</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item p-3">
+                            <div class="field">
+                                <div class="control">
+                                    <div class="select is-small">
+                                        <select name="sign3">
+                                            <option selected disabled>operator</option>
+                                            <option value=">">></option>
+                                            <option value="<"><</option>
+                                            <option value="<="><=</option>
+                                            <option value=">=">>=</option>
+                                            <option value="==">==</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item p-3">
+                            <div class="field">
+                                <div class="field">
+                                    <div class="control">
+                                        <input name="value3" class="input is-small" type="number" step="0.01"
+                                               placeholder="value" oninput="clearField('factor3')">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <p class="title is-5">or</p>
+                        </div>
+
+                        <div class="level-item p-2">
+                            <div class="field">
+                                <div class="field">
+                                    <div class="control">
+                                        <input name="factor3" class="input is-small" type="number" step="0.1"
+                                               placeholder="factor" oninput="clearField('value3')">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="level-item">
+                            <p class="title is-5">✕</p>
+                        </div>
+
+                        <div class="level-item p-3">
+                            <div class="field">
+                                <div class="control">
+                                    <div class="select is-small">
+                                        <select name="factor_var3">
+                                            <option selected disabled>field</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="clicks">Clicks</option>
+                                            <option value="binom_clicks">Binom clicks</option>
+                                            <option value="impressions">Impressions</option>
+                                            <option value="lp_clicks">LP clicks</option>
+                                            <option value="ctr">CTR</option>
+                                            <option value="lp_ctr">LP CTR</option>
+                                            <option value="leads">Leads</option>
+                                            <option value="cost">Cost</option>
+                                            <option value="revenue">Revenue</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="roi">ROI</option>
+                                            <option value="payout">Payout</option>
+                                            <option value="cpc">CPC</option>
+                                            <option value="cpm">CPM</option>
+                                            <option value="epc">EPC</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr/>
                 </div>
 
-                <div class="level-right" id="hidden_div_4">
-                    <div class="level-item">
-                        <p class="title is-5">has</p>
-                    </div>
-                    <div class="level-item p-3">
-                        <div class="field">
-                            <div class="control">
-                                <div class="select">
-                                    <select name="param4">
-                                        <option selected disabled>field</option>
-                                        <option value="profit">Profit</option>
-                                        <option value="clicks">Clicks</option>
-                                        <option value="binom_clicks">Binom clicks</option>
-                                        <option value="impressions">Impressions</option>
-                                        <option value="lp_clicks">LP clicks</option>
-                                        <option value="ctr">CTR</option>
-                                        <option value="lp_ctr">LP CTR</option>
-                                        <option value="leads">Leads</option>
-                                        <option value="cost">Cost</option>
-                                        <option value="revenue">Revenue</option>
-                                        <option value="profit">Profit</option>
-                                        <option value="roi">ROI</option>
-                                        <option value="payout">Payout</option>
-                                        <option value="cpc">CPC</option>
-                                        <option value="cpm">CPM</option>
-                                        <option value="epc">EPC</option>
-                                    </select>
-                                </div>
-                            </div>
+                <div id="hidden_div_4">
+                    <hr/>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <p class="title is-5">has</p>
                         </div>
-                    </div>
-                    <div class="level-item p-3">
-                        <div class="field">
-                            <div class="control">
-                                <div class="select">
-                                    <select name="sign4">
-                                        <option selected disabled>operator</option>
-                                        <option value=">">></option>
-                                        <option value="<"><</option>
-                                        <option value="<="><=</option>
-                                        <option value=">=">>=</option>
-                                        <option value="==">==</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="level-item p-3">
-                        <div class="field">
+                        <div class="level-item p-3">
                             <div class="field">
                                 <div class="control">
-                                    <input name="value4" class="input" type="number" step="0.01"
-                                           placeholder="value">
+                                    <div class="select is-small">
+                                        <select name="param4">
+                                            <option selected disabled>field</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="clicks">Clicks</option>
+                                            <option value="binom_clicks">Binom clicks</option>
+                                            <option value="impressions">Impressions</option>
+                                            <option value="lp_clicks">LP clicks</option>
+                                            <option value="ctr">CTR</option>
+                                            <option value="lp_ctr">LP CTR</option>
+                                            <option value="leads">Leads</option>
+                                            <option value="cost">Cost</option>
+                                            <option value="revenue">Revenue</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="roi">ROI</option>
+                                            <option value="payout">Payout</option>
+                                            <option value="cpc">CPC</option>
+                                            <option value="cpm">CPM</option>
+                                            <option value="epc">EPC</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item p-3">
+                            <div class="field">
+                                <div class="control">
+                                    <div class="select is-small">
+                                        <select name="sign4">
+                                            <option selected disabled>operator</option>
+                                            <option value=">">></option>
+                                            <option value="<"><</option>
+                                            <option value="<="><=</option>
+                                            <option value=">=">>=</option>
+                                            <option value="==">==</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="level-item p-3">
+                            <div class="field">
+                                <div class="field">
+                                    <div class="control">
+                                        <input name="value4" class="input is-small" type="number" step="0.01"
+                                               placeholder="value" oninput="clearField('factor4')">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <div class="level-right">
+                        <div class="level-item">
+                            <p class="title is-5">or</p>
+                        </div>
+
+                        <div class="level-item p-2">
+                            <div class="field">
+                                <div class="field">
+                                    <div class="control">
+                                        <input name="factor4" class="input is-small" type="number" step="0.1"
+                                               placeholder="factor" oninput="clearField('value4')">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="level-item">
+                            <p class="title is-5">✕</p>
+                        </div>
+
+                        <div class="level-item p-3">
+                            <div class="field">
+                                <div class="control">
+                                    <div class="select is-small">
+                                        <select name="factor_var4">
+                                            <option selected disabled>field</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="clicks">Clicks</option>
+                                            <option value="binom_clicks">Binom clicks</option>
+                                            <option value="impressions">Impressions</option>
+                                            <option value="lp_clicks">LP clicks</option>
+                                            <option value="ctr">CTR</option>
+                                            <option value="lp_ctr">LP CTR</option>
+                                            <option value="leads">Leads</option>
+                                            <option value="cost">Cost</option>
+                                            <option value="revenue">Revenue</option>
+                                            <option value="profit">Profit</option>
+                                            <option value="roi">ROI</option>
+                                            <option value="payout">Payout</option>
+                                            <option value="cpc">CPC</option>
+                                            <option value="cpm">CPM</option>
+                                            <option value="epc">EPC</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr/>
                 </div>
 
                 <div class="level-right">
@@ -329,7 +542,7 @@
                         <div class="field">
                             <div class="field">
                                 <div class="control">
-                                    <input name="days" class="input" type="number" step="1" min="1" max="30"
+                                    <input name="days" class="input is-small" type="number" step="1" min="1" max="30"
                                            placeholder="days" required>
                                 </div>
                             </div>
@@ -344,7 +557,7 @@
                     <div class="level-item p-3">
                         <div class="field">
                             <div class="control">
-                                <div class="select">
+                                <div class="select is-small">
                                     <select name="action">
                                         <option value="pause">pause</option>
                                         <option value="resume">resume</option>
@@ -383,6 +596,11 @@
         </div>
 
         <script>
+            function clearField(fieldName) {
+                const field = document.getElementsByName(fieldName)[0]
+                field.value = '';
+            }
+
             function disableSourceIdInput() {
                 var cb = document.getElementById('all_sources_checkbox').checked;
                 document.getElementById('name_input').disabled = cb;
@@ -398,28 +616,28 @@
             function showDiv(element) {
                 switch (element.value) {
                     case "1":
-                        document.getElementById('hidden_div_1').style.display = 'flex';
+                        document.getElementById('hidden_div_1').style.display = 'block';
                         document.getElementById('hidden_div_2').style.display = 'none';
                         document.getElementById('hidden_div_3').style.display = 'none';
                         document.getElementById('hidden_div_4').style.display = 'none';
                         break;
                     case "2":
-                        document.getElementById('hidden_div_1').style.display = 'flex';
-                        document.getElementById('hidden_div_2').style.display = 'flex';
+                        document.getElementById('hidden_div_1').style.display = 'block';
+                        document.getElementById('hidden_div_2').style.display = 'block';
                         document.getElementById('hidden_div_3').style.display = 'none';
                         document.getElementById('hidden_div_4').style.display = 'none';
                         break;
                     case "3":
-                        document.getElementById('hidden_div_1').style.display = 'flex';
-                        document.getElementById('hidden_div_2').style.display = 'flex';
-                        document.getElementById('hidden_div_3').style.display = 'flex';
+                        document.getElementById('hidden_div_1').style.display = 'block';
+                        document.getElementById('hidden_div_2').style.display = 'block';
+                        document.getElementById('hidden_div_3').style.display = 'block';
                         document.getElementById('hidden_div_4').style.display = 'none';
                         break;
                     case "4":
-                        document.getElementById('hidden_div_1').style.display = 'flex';
-                        document.getElementById('hidden_div_2').style.display = 'flex';
-                        document.getElementById('hidden_div_3').style.display = 'flex';
-                        document.getElementById('hidden_div_4').style.display = 'flex';
+                        document.getElementById('hidden_div_1').style.display = 'block';
+                        document.getElementById('hidden_div_2').style.display = 'block';
+                        document.getElementById('hidden_div_3').style.display = 'block';
+                        document.getElementById('hidden_div_4').style.display = 'block';
                         break;
                 }
             }

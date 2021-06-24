@@ -623,7 +623,7 @@ class ApiUtils:
 
         return black_url
 
-    def add_sources_to_blacklist(self, campaign_name, sources_names, ts: TrafficSource):
+    def add_sources_to_blacklist(self, campaign_name, sources_names, ts: TrafficSource, rule: SourceRule):
         response = None
         is_same_sources = None
         try:
@@ -677,10 +677,11 @@ class ApiUtils:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
             if response and not is_same_sources:
+                logging.info(f"Applying SourceIds Rule with ID:{rule.rule_id}")
                 logging.info(f'Source {sources_names} from campaign {campaign_name} added to blacklist')
                 logging.debug(response.text)
 
-    def remove_sources_from_blacklist(self, campaign_name, sources_names, ts: TrafficSource):
+    def remove_sources_from_blacklist(self, campaign_name, sources_names, ts: TrafficSource, rule: SourceRule):
         response = None
         try:
             url = self.get_source_blacklist_url(campaign_name, ts)
@@ -725,6 +726,7 @@ class ApiUtils:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
             if response:
+                logging.info(f"Applying SourceIds Rule with ID:{rule.rule_id}")
                 logging.info(f'Source {sources_names} removed from blacklist')
                 logging.debug(response.text)
 
@@ -820,8 +822,14 @@ class ApiUtils:
                     num = num + 1
                     campaign_value = getattr(campaign, getattr(rule, f'param{num}'))
                     operator = get_comparison_operator(getattr(rule, f'sign{num}'))
-                    rule_value = getattr(rule, f'value{num}')
-                    boolean_list.append(operator(campaign_value, rule_value))
+
+                    factor = getattr(rule, f'factor{num}')
+                    if factor == 0:
+                        rule_value = getattr(rule, f'value{num}')
+                        boolean_list.append(operator(campaign_value, rule_value))
+                    else:
+                        campaign_factor_var = getattr(campaign, getattr(rule, f'factor_var{num}'))
+                        boolean_list.append(operator(campaign_value, factor*campaign_factor_var))
 
                 if all(boolean_list):
                     logging.info(f"Applying Campaigns Rule with ID:{rule.rule_id}")
@@ -972,14 +980,19 @@ class ApiUtils:
                     num = num + 1
                     source_value = getattr(source, getattr(rule, f'param{num}'))
                     operator = get_comparison_operator(getattr(rule, f'sign{num}'))
-                    rule_value = getattr(rule, f'value{num}')
-                    boolean_list.append(operator(source_value, rule_value))
+
+                    factor = getattr(rule, f'factor{num}')
+                    if factor == 0:
+                        rule_value = getattr(rule, f'value{num}')
+                        boolean_list.append(operator(source_value, rule_value))
+                    else:
+                        campaign_factor_var = getattr(source, getattr(rule, f'factor_var{num}'))
+                        boolean_list.append(operator(source_value, factor * campaign_factor_var))
 
                 if all(boolean_list):
                     appropriate_sources.append(source.name)
 
             if len(appropriate_sources) != 0:
-                logging.info(f"Applying SourceIds Rule with ID:{rule.rule_id}")
                 action = get_source_action(getattr(rule, 'action'), self)
 
                 binom = Binom.query.filter_by(name=binom_source).first()
@@ -989,4 +1002,4 @@ class ApiUtils:
                         TrafficSource.binom_id == binom.id
                     )
                 ).first()
-                action(campaign_name, appropriate_sources, ts)
+                action(campaign_name, appropriate_sources, ts, rule)

@@ -9,12 +9,16 @@ def set_campaign_rule_fields(rule_dict):
     campaign_rule.ts_id = rule_dict['ts']
     campaign_rule.param1 = rule_dict['param1']
     campaign_rule.sign1 = rule_dict['sign1']
+    campaign_rule.factor_var1 = rule_dict['factor_var1']
     campaign_rule.param2 = rule_dict['param2']
     campaign_rule.sign2 = rule_dict['sign2']
+    campaign_rule.factor_var2 = rule_dict['factor_var2']
     campaign_rule.param3 = rule_dict['param3']
     campaign_rule.sign3 = rule_dict['sign3']
+    campaign_rule.factor_var3 = rule_dict['factor_var3']
     campaign_rule.param4 = rule_dict['param4']
     campaign_rule.sign4 = rule_dict['sign4']
+    campaign_rule.factor_var4 = rule_dict['factor_var4']
     campaign_rule.days = rule_dict['days']
     campaign_rule.action = rule_dict['action']
 
@@ -42,6 +46,26 @@ def set_campaign_rule_fields(rule_dict):
     except ValueError:
         campaign_rule.value4 = 0
 
+    try:
+        campaign_rule.factor1 = float(rule_dict['factor1'])
+    except ValueError:
+        campaign_rule.factor1 = 0
+
+    try:
+        campaign_rule.factor2 = float(rule_dict['factor2'])
+    except ValueError:
+        campaign_rule.factor2 = 0
+
+    try:
+        campaign_rule.factor3 = float(rule_dict['factor3'])
+    except ValueError:
+        campaign_rule.factor3 = 0
+
+    try:
+        campaign_rule.factor4 = float(rule_dict['factor4'])
+    except ValueError:
+        campaign_rule.factor4 = 0
+
     return campaign_rule
 
 
@@ -51,12 +75,16 @@ def set_source_rule_fields(rule_dict):
     source_rule.ts_id = rule_dict['ts']
     source_rule.param1 = rule_dict['param1']
     source_rule.sign1 = rule_dict['sign1']
+    source_rule.factor_var1 = rule_dict['factor_var1']
     source_rule.param2 = rule_dict['param2']
     source_rule.sign2 = rule_dict['sign2']
+    source_rule.factor_var2 = rule_dict['factor_var2']
     source_rule.param3 = rule_dict['param3']
     source_rule.sign3 = rule_dict['sign3']
+    source_rule.factor_var3 = rule_dict['factor_var3']
     source_rule.param4 = rule_dict['param4']
     source_rule.sign4 = rule_dict['sign4']
+    source_rule.factor_var4 = rule_dict['factor_var4']
     source_rule.days = rule_dict['days']
     source_rule.action = rule_dict['action']
 
@@ -87,6 +115,26 @@ def set_source_rule_fields(rule_dict):
         source_rule.value4 = float(rule_dict['value4'])
     except ValueError:
         source_rule.value4 = 0
+
+    try:
+        source_rule.factor1 = float(rule_dict['factor1'])
+    except ValueError:
+        source_rule.factor1 = 0
+
+    try:
+        source_rule.factor2 = float(rule_dict['factor2'])
+    except ValueError:
+        source_rule.factor2 = 0
+
+    try:
+        source_rule.factor3 = float(rule_dict['factor3'])
+    except ValueError:
+        source_rule.factor3 = 0
+
+    try:
+        source_rule.factor4 = float(rule_dict['factor4'])
+    except ValueError:
+        source_rule.factor4 = 0
 
     return source_rule
 
