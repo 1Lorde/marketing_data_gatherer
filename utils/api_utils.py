@@ -829,6 +829,8 @@ class ApiUtils:
                         boolean_list.append(operator(campaign_value, rule_value))
                     else:
                         campaign_factor_var = getattr(campaign, getattr(rule, f'factor_var{num}'))
+                        if getattr(rule, f'factor_var{num}') == 'payout' and campaign_factor_var <= 0:
+                            continue
                         boolean_list.append(operator(campaign_value, factor*campaign_factor_var))
 
                 if all(boolean_list):
@@ -986,8 +988,10 @@ class ApiUtils:
                         rule_value = getattr(rule, f'value{num}')
                         boolean_list.append(operator(source_value, rule_value))
                     else:
-                        campaign_factor_var = getattr(source, getattr(rule, f'factor_var{num}'))
-                        boolean_list.append(operator(source_value, factor * campaign_factor_var))
+                        source_factor_var = getattr(source, getattr(rule, f'factor_var{num}'))
+                        if getattr(rule, f'factor_var{num}') == 'payout' and source_factor_var <= 0:
+                            continue
+                        boolean_list.append(operator(source_value, factor * source_factor_var))
 
                 if all(boolean_list):
                     appropriate_sources.append(source.name)
