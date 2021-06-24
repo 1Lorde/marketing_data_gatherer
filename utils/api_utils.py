@@ -814,7 +814,8 @@ class ApiUtils:
                         campaign_stat.ctr = campaign_stat.clicks / campaign_stat.impressions * 100
                         campaign_stat.cpm = campaign_stat.cost / campaign_stat.impressions * 1000
 
-                campaigns_stats_list.append(campaign_stat)
+                if campaign_stat.binom_source != 'undefined':
+                    campaigns_stats_list.append(campaign_stat)
 
             for campaign in campaigns_stats_list:
                 boolean_list = []
@@ -936,6 +937,9 @@ class ApiUtils:
                          Source.campaign_name == names[1])).all()
 
                 source_list = source_list + current_source_list
+
+                if len(source_list) == 0:
+                    continue
 
                 for source in source_list:
                     source_stat.traffic_source = source.traffic_source
