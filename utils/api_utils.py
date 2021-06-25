@@ -589,7 +589,7 @@ class ApiUtils:
             logging.info(f'Resumed campaign {campaign_name} from {ts.name} (ID:{ts.binom_ts_id}) from {ts.binom.name}')
             logging.debug(response.content)
 
-    def stop_campaign(self, campaign_name, ts: TrafficSource):
+    def stop_campaign(self, campaign_name, ts: TrafficSource, rule:CampaignRule):
         try:
             url = self.get_campaign_stop_url(campaign_name, ts)
             paused = PausedCampaign.query.filter_by(campaign_name=campaign_name,
@@ -607,6 +607,7 @@ class ApiUtils:
         except Exception as err:
             logging.error(f'Other error occurred: {err}')  # Python 3.6
         else:
+            logging.info(f"Applying Campaigns Rule with ID:{rule.rule_id}")
             logging.info(f'Paused campaign {campaign_name} from {ts.name} (ID:{ts.binom_ts_id}) from {ts.binom.name}')
             logging.debug(response.content)
 
@@ -835,7 +836,6 @@ class ApiUtils:
                         boolean_list.append(operator(campaign_value, factor*campaign_factor_var))
 
                 if all(boolean_list):
-                    logging.info(f"Applying Campaigns Rule with ID:{rule.rule_id}")
                     action = get_campaign_action(getattr(rule, 'action'), self)
                     binom = Binom.query.filter_by(name=campaign.binom_source).first()
                     ts = TrafficSource.query.filter(
@@ -844,7 +844,7 @@ class ApiUtils:
                             TrafficSource.binom_id == binom.id
                         )
                     ).first()
-                    action(campaign.name, ts)
+                    action(campaign.name, ts, rule)
 
     def check_source_rules(self):
         rules = SourceRule.query.all()

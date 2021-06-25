@@ -71,13 +71,13 @@ def daily_job():
                     daily_campaigns = campaigns_to_daily(campaigns)
                     daily_sources = sources_to_daily(sources)
 
-                    fetched_campaigns += daily_campaigns
-                    fetched_sources += daily_sources
-
                     daily_campaigns, daily_sources, fetched_at = set_fetched_at(daily_campaigns, daily_sources,
                                                                                 yesterday)
 
-        save_data_to_db(daily_campaigns, daily_sources)
+                    fetched_campaigns += daily_campaigns
+                    fetched_sources += daily_sources
+
+        save_data_to_db(fetched_campaigns, fetched_sources)
         last_day = yesterday - timedelta(30)
         DailyCampaign.query.filter_by(fetched_at=last_day).delete()
         DailySource.query.filter_by(fetched_at=last_day).delete()
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     check_rules_job()
 
     schedule.every(2).minutes.do(live_job)
-    schedule.every(5).minutes.do(check_rules_job)
+    schedule.every(10).minutes.do(check_rules_job)
     schedule.every().day.at("04:00").do(daily_job)
 
     while 1:
