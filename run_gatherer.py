@@ -123,14 +123,14 @@ if __name__ == '__main__':
     #     for binom in binoms:
     #         ts_list = TrafficSource.query.filter_by(binom_id=binom.id).all()
     #         for ts in ts_list:
-    #             extract_n_days_job(ts, binom, 30)
+    #             extract_n_days_job(ts, binom, 2)
 
     logging.debug('Run data gathering script')
     live_job()
     check_rules_job()
 
-    schedule.every(2).minutes.do(live_job)
-    schedule.every(10).minutes.do(check_rules_job)
+    schedule.every(4).minutes.do(live_job)
+    schedule.every(20).minutes.do(check_rules_job)
     schedule.every().day.at("04:00").do(daily_job)
 
     while 1:

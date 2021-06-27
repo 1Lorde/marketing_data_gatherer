@@ -224,6 +224,10 @@ class ApiUtils:
                         continue
 
                     name = element['name']
+
+                    if not name.isnumeric():
+                        continue
+
                     revenue = float(element['revenue'])
                     source = Source(name, campaign_name, revenue, ts.binom_ts_id)
                     source.binom_source = binom.name
@@ -992,10 +996,20 @@ class ApiUtils:
                         rule_value = getattr(rule, f'value{num}')
                         boolean_list.append(operator(source_value, rule_value))
                     else:
-                        source_factor_var = getattr(source, getattr(rule, f'factor_var{num}'))
-                        if getattr(rule, f'factor_var{num}') == 'payout' and source_factor_var <= 0:
-                            continue
-                        boolean_list.append(operator(source_value, factor * source_factor_var))
+                        attr = getattr(rule, f'factor_var{num}')
+                        factor_var = getattr(source, attr)
+                        if attr == 'payout':
+                            campaign = Campaign.query.filter_by(name=source.campaign_name,
+                                                                traffic_source=source.traffic_source,
+                                                                binom_source=source.binom_source).first()
+                            if not campaign:
+                                continue
+
+                            factor_var = campaign.payout
+                            if factor_var <= 0:
+                                continue
+
+                        boolean_list.append(operator(source_value, factor * factor_var))
 
                 if all(boolean_list):
                     appropriate_sources.append(source.name)

@@ -254,13 +254,20 @@ def paused_campaigns():
 @app.route('/campaigns/paused/add', methods=['GET', 'POST'])
 def campaigns_add_paused():
     if request.method == 'POST':
-        campaign_name = request.form.get('campaign_name')
+        campaign_name_param = request.form.get('campaign_name')
         ts_id = request.form.get('ts_id')
 
-        if campaign_name and ts_id:
+        if campaign_name_param and ts_id:
             ts = TrafficSource.query.filter_by(id=ts_id).first()
-            paused = PausedCampaign(campaign_name, ts)
-            db.session.add(paused)
+            if ',' in campaign_name_param:
+                campaign_names = campaign_name_param.split(',')
+                for campaign_name in campaign_names:
+                    paused = PausedCampaign(campaign_name, ts)
+                    db.session.add(paused)
+            else:
+                paused = PausedCampaign(campaign_name_param, ts)
+                db.session.add(paused)
+
             db.session.commit()
             return redirect(url_for('paused_campaigns'))
 
@@ -505,14 +512,20 @@ def paused_sources():
 @app.route('/sources/paused/add', methods=['GET', 'POST'])
 def sources_add_paused():
     if request.method == 'POST':
-        source_name = request.form.get('source_name')
+        source_name_param = request.form.get('source_name')
         campaign_name = request.form.get('campaign_name')
         ts_id = request.form.get('ts_id')
 
-        if source_name and campaign_name and ts_id:
+        if source_name_param and campaign_name and ts_id:
             ts = TrafficSource.query.filter_by(id=ts_id).first()
-            paused = PausedSource(source_name, campaign_name, ts)
-            db.session.add(paused)
+            if ',' in source_name_param:
+                source_names = source_name_param.split(',')
+                for source_name in source_names:
+                    paused = PausedSource(source_name, campaign_name, ts)
+                    db.session.add(paused)
+            else:
+                paused = PausedSource(source_name_param, campaign_name, ts)
+                db.session.add(paused)
             db.session.commit()
             return redirect(url_for('paused_sources'))
 
