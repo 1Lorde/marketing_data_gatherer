@@ -34,7 +34,7 @@ def live_job():
                     fetched_campaigns += campaigns
                     fetched_sources += sources
                     logging.debug(f"Campaigns ({binom.name}, {ts.binom_ts_id}):\n{campaigns}")
-                    logging.debug(f"Sources({binom.name}, {ts.binom_ts_id}):\n{sources}")
+                    logging.debug(f"Sources ({binom.name}, {ts.binom_ts_id}):\n{sources}")
 
         last_fetched_at = get_last_fetched()
         remove_data_fetched_at(last_fetched_at)
@@ -49,6 +49,14 @@ def check_rules_job():
         api.check_campaign_rules()
         api.check_source_rules()
     logging.debug('End checking rules')
+
+
+def update_stats_job():
+    logging.debug(f'SourceIds stats updating started')
+    with app.test_request_context():
+        db.init_app(app)
+        api.update_sources_stats()
+    logging.debug(f'SourceIds stats updating ended')
 
 
 def daily_job():
@@ -129,9 +137,10 @@ if __name__ == '__main__':
     live_job()
     check_rules_job()
 
-    schedule.every(4).minutes.do(live_job)
-    schedule.every(20).minutes.do(check_rules_job)
+    schedule.every(5).minutes.do(live_job)
+    schedule.every(5).minutes.do(check_rules_job)
     schedule.every().day.at("04:00").do(daily_job)
+    schedule.every().day.at("05:00").do(update_stats_job)
 
     while 1:
         schedule.run_pending()

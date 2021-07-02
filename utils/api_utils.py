@@ -9,7 +9,7 @@ from sqlalchemy.sql.expression import and_
 
 from gatherer.utils import is_push_house, is_ungads
 from models.models import Campaign, Source, DailyCampaign, CampaignRule, DailySource, SourceRule, db, PausedSource, \
-    PausedCampaign, Binom, TrafficSource
+    PausedCampaign, Binom, TrafficSource, SourcePrecalculatedStat
 from utils.rules_utils import get_comparison_operator, get_campaign_action, get_source_action
 
 
@@ -593,7 +593,7 @@ class ApiUtils:
             logging.info(f'Resumed campaign {campaign_name} from {ts.name} (ID:{ts.binom_ts_id}) from {ts.binom.name}')
             logging.debug(response.content)
 
-    def stop_campaign(self, campaign_name, ts: TrafficSource, rule:CampaignRule):
+    def stop_campaign(self, campaign_name, ts: TrafficSource, rule: CampaignRule):
         try:
             url = self.get_campaign_stop_url(campaign_name, ts)
             paused = PausedCampaign.query.filter_by(campaign_name=campaign_name,
@@ -837,7 +837,7 @@ class ApiUtils:
                         campaign_factor_var = getattr(campaign, getattr(rule, f'factor_var{num}'))
                         if getattr(rule, f'factor_var{num}') == 'payout' and campaign_factor_var <= 0:
                             continue
-                        boolean_list.append(operator(campaign_value, factor*campaign_factor_var))
+                        boolean_list.append(operator(campaign_value, factor * campaign_factor_var))
 
                 if all(boolean_list):
                     action = get_campaign_action(getattr(rule, 'action'), self)
@@ -853,128 +853,93 @@ class ApiUtils:
     def check_source_rules(self):
         rules = SourceRule.query.all()
         now = datetime.now()
+        yesterday = datetime(now.year, now.month, now.day, 0, 0, 0) - timedelta(days=1)
 
         for rule in rules:
             if rule.source_name != '*':
                 if rule.campaign_name != '*':
-                    sources_list = DailySource.query.filter(
+                    sources_list = SourcePrecalculatedStat.query.filter(
                         and_(
-                            DailySource.name == rule.source_name,
-                            DailySource.campaign_name == rule.campaign_name,
-                            DailySource.traffic_source == rule.ts.binom_ts_id,
-                            DailySource.binom_source == rule.ts.binom.name
-                        )
-                    ).all()
-
-                    current_sources = Source.query.filter(
-                        and_(
-                            Source.name == rule.source_name,
-                            Source.campaign_name == rule.campaign_name,
-                            Source.traffic_source == rule.ts.binom_ts_id,
-                            Source.binom_source == rule.ts.binom.name
+                            SourcePrecalculatedStat.name == rule.source_name,
+                            SourcePrecalculatedStat.campaign_name == rule.campaign_name,
+                            SourcePrecalculatedStat.traffic_source == rule.ts.binom_ts_id,
+                            SourcePrecalculatedStat.binom_source == rule.ts.binom.name,
+                            SourcePrecalculatedStat.period_start == yesterday - timedelta(days=rule.days)
                         )
                     ).all()
                 else:
-                    sources_list = DailySource.query.filter(
+                    sources_list = SourcePrecalculatedStat.query.filter(
                         and_(
-                            DailySource.name == rule.source_name,
-                            DailySource.traffic_source == rule.ts.binom_ts_id,
-                            DailySource.binom_source == rule.ts.binom.name
-                        )
-                    ).all()
-
-                    current_sources = Source.query.filter(
-                        and_(
-                            Source.name == rule.source_name,
-                            Source.traffic_source == rule.ts.binom_ts_id,
-                            Source.binom_source == rule.ts.binom.name
+                            SourcePrecalculatedStat.name == rule.source_name,
+                            SourcePrecalculatedStat.traffic_source == rule.ts.binom_ts_id,
+                            SourcePrecalculatedStat.binom_source == rule.ts.binom.name,
+                            SourcePrecalculatedStat.period_start == yesterday - timedelta(days=rule.days)
                         )
                     ).all()
             else:
                 if rule.campaign_name != '*':
-                    sources_list = DailySource.query.filter(
+                    sources_list = SourcePrecalculatedStat.query.filter(
                         and_(
-                            DailySource.campaign_name == rule.campaign_name,
-                            DailySource.traffic_source == rule.ts.binom_ts_id,
-                            DailySource.binom_source == rule.ts.binom.name
-                        )
-                    ).all()
-
-                    current_sources = Source.query.filter(
-                        and_(
-                            Source.campaign_name == rule.campaign_name,
-                            Source.traffic_source == rule.ts.binom_ts_id,
-                            Source.binom_source == rule.ts.binom.name
+                            SourcePrecalculatedStat.campaign_name == rule.campaign_name,
+                            SourcePrecalculatedStat.traffic_source == rule.ts.binom_ts_id,
+                            SourcePrecalculatedStat.binom_source == rule.ts.binom.name,
+                            SourcePrecalculatedStat.period_start == yesterday - timedelta(days=rule.days)
                         )
                     ).all()
                 else:
-                    sources_list = DailySource.query.filter(
+                    sources_list = SourcePrecalculatedStat.query.filter(
                         and_(
-                            DailySource.traffic_source == rule.ts.binom_ts_id,
-                            DailySource.binom_source == rule.ts.binom.name
+                            SourcePrecalculatedStat.traffic_source == rule.ts.binom_ts_id,
+                            SourcePrecalculatedStat.binom_source == rule.ts.binom.name,
+                            SourcePrecalculatedStat.period_start == yesterday - timedelta(days=rule.days)
                         )
                     ).all()
-
-                    current_sources = Source.query.filter(
-                        and_(
-                            Source.traffic_source == rule.ts.binom_ts_id,
-                            Source.binom_source == rule.ts.binom.name
-                        )
-                    ).all()
-
-            sources_list = sources_list + current_sources
-
-            unique_names = set()
-            [unique_names.add((source.name, source.campaign_name)) for source in sources_list if
-             (source.name, source.campaign_name) not in unique_names]
 
             sources_stats_list = []
-            for names in unique_names:
-                source_stat = Source(names[0], names[1], 0, 0)
+            for source in sources_list:
+                current_source = Source.query.filter(
+                    and_(
+                        Source.name == rule.source_name,
+                        Source.campaign_name == rule.campaign_name,
+                        Source.traffic_source == rule.ts.binom_ts_id,
+                        Source.binom_source == rule.ts.binom.name
+                    )
+                ).first()
 
-                source_list = DailySource.query.filter(
-                    and_(DailySource.name == names[0],
-                         DailySource.campaign_name == names[1],
-                         DailySource.fetched_at >= now - timedelta(days=rule.days))).all()
-                current_source_list = Source.query.filter(
-                    and_(Source.name == names[0],
-                         Source.campaign_name == names[1])).all()
-
-                source_list = source_list + current_source_list
-
-                if len(source_list) == 0:
+                if not current_source:
+                    sources_stats_list.append(source)
                     continue
 
-                for source in source_list:
-                    source_stat.traffic_source = source.traffic_source
-                    source_stat.binom_source = source.binom_source
-                    source_stat.revenue += source.revenue
-                    source_stat.binom_clicks += source.binom_clicks
-                    source_stat.lp_clicks += source.lp_clicks
-                    source_stat.leads += source.leads
+                source_stat = Source(source.name, source.campaign_name, source.revenue, source.traffic_source)
+                source_stat.traffic_source = source.traffic_source
+                source_stat.binom_source = source.binom_source
+                source_stat.revenue = current_source.revenue + source.revenue
+                source_stat.binom_clicks = current_source.binom_clicks + source.binom_clicks
+                source_stat.lp_clicks = current_source.lp_clicks + source.lp_clicks
+                source_stat.leads = current_source.leads + source.leads
 
-                    source_stat.cost += source.cost
-                    source_stat.clicks += source.clicks
-                    source_stat.impressions += source.impressions
+                source_stat.cost = current_source.cost + source.cost
+                source_stat.clicks = current_source.clicks + source.clicks
+                source_stat.impressions = current_source.impressions + source.impressions
 
-                    if source_stat.leads != 0:
-                        source_stat.payout = source_stat.revenue / source_stat.leads
+                if source_stat.leads != 0:
+                    source_stat.payout = source_stat.revenue / source_stat.leads
 
-                    source_stat.profit = source_stat.revenue - source_stat.cost
+                source_stat.profit = source_stat.revenue - source_stat.cost
 
-                    if source_stat.clicks != 0:
-                        source_stat.cpc = source_stat.cost / source_stat.clicks
-                        source_stat.epc = source_stat.revenue / source_stat.clicks
+                if source_stat.clicks != 0:
+                    source_stat.cpc = source_stat.cost / source_stat.clicks
+                    source_stat.epc = source_stat.revenue / source_stat.clicks
 
-                    if source_stat.binom_clicks != 0:
-                        source_stat.lp_ctr = source_stat.lp_clicks / source_stat.binom_clicks * 100
+                if source_stat.binom_clicks != 0:
+                    source_stat.lp_ctr = source_stat.lp_clicks / source_stat.binom_clicks * 100
 
-                    if source_stat.cost != 0:
-                        source_stat.roi = source_stat.profit / source_stat.cost * 100
+                if source_stat.cost != 0:
+                    source_stat.roi = source_stat.profit / source_stat.cost * 100
 
-                    if source_stat.impressions != 0:
-                        source_stat.ctr = source_stat.clicks / source_stat.impressions * 100
-                        source_stat.cpm = source_stat.cost / source_stat.impressions * 1000
+                if source_stat.impressions != 0:
+                    source_stat.ctr = source_stat.clicks / source_stat.impressions * 100
+                    source_stat.cpm = source_stat.cost / source_stat.impressions * 1000
 
                 sources_stats_list.append(source_stat)
 
@@ -1025,3 +990,183 @@ class ApiUtils:
                     )
                 ).first()
                 action(campaign_name, appropriate_sources, ts, rule)
+
+    def calculate_sources_stats(self):
+        now = datetime.now()
+        today = datetime(now.year, now.month, now.day, 0, 0, 0)
+        yesterday = datetime(now.year, now.month, now.day, 0, 0, 0) - timedelta(days=1)
+        sources_stats_list = []
+
+        binoms = Binom.query.all()
+        for binom in binoms:
+            ts_list = TrafficSource.query.filter_by(binom_id=binom.id).all()
+            for ts in ts_list:
+                if ts.credentials_id != -1:
+                    for days in range(1, 30):
+                        sources_list = DailySource.query.filter(
+                            and_(DailySource.binom_source == binom.name,
+                                 DailySource.traffic_source == ts.binom_ts_id,
+                                 DailySource.fetched_at == today - timedelta(days=days))) \
+                            .all()
+
+                        for source in sources_list:
+                            source_stat = SourcePrecalculatedStat(source.name, source.campaign_name, 0, 0)
+                            source_stat.period_end = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
+                            source_stat.period_start = today - timedelta(days=days)
+                            source_stat.traffic_source = source.traffic_source
+                            source_stat.binom_source = source.binom_source
+
+                            previous_days_stat = None
+                            for i in range(0, days):
+                                previous_days_stat = SourcePrecalculatedStat.query.filter(
+                                    and_(SourcePrecalculatedStat.binom_source == binom.name,
+                                         SourcePrecalculatedStat.traffic_source == ts.binom_ts_id,
+                                         SourcePrecalculatedStat.campaign_name == source.campaign_name,
+                                         SourcePrecalculatedStat.name == source.name,
+                                         SourcePrecalculatedStat.period_start == today - timedelta(days=days - 1 - i))) \
+                                    .first()
+
+                                if previous_days_stat:
+                                    break
+
+                            if not previous_days_stat:
+                                previous_days_stat = SourcePrecalculatedStat(source.name, source.campaign_name, 0, 0)
+
+                            source_stat.revenue = source.revenue + previous_days_stat.revenue
+                            source_stat.binom_clicks = source.binom_clicks + previous_days_stat.binom_clicks
+                            source_stat.lp_clicks = source.lp_clicks + previous_days_stat.lp_clicks
+                            source_stat.leads = source.leads + previous_days_stat.leads
+
+                            source_stat.cost = source.cost + previous_days_stat.cost
+                            source_stat.clicks = source.clicks + previous_days_stat.clicks
+                            source_stat.impressions = source.impressions + previous_days_stat.impressions
+
+                            if source_stat.leads != 0:
+                                source_stat.payout = source_stat.revenue / source_stat.leads
+
+                            source_stat.profit = source_stat.revenue - source_stat.cost
+
+                            if source_stat.clicks != 0:
+                                source_stat.cpc = source_stat.cost / source_stat.clicks
+                                source_stat.epc = source_stat.revenue / source_stat.clicks
+
+                            if source_stat.binom_clicks != 0:
+                                source_stat.lp_ctr = source_stat.lp_clicks / source_stat.binom_clicks * 100
+
+                            if source_stat.cost != 0:
+                                source_stat.roi = source_stat.profit / source_stat.cost * 100
+
+                            if source_stat.impressions != 0:
+                                source_stat.ctr = source_stat.clicks / source_stat.impressions * 100
+                                source_stat.cpm = source_stat.cost / source_stat.impressions * 1000
+
+                            db.session.add(source_stat)
+                        db.session.commit()
+                        logging.debug(f'Day {days}. Stats for {len(sources_list)} from ts {ts.binom_ts_id}')
+
+        return sources_stats_list
+
+    def update_sources_stats(self):
+        now = datetime.now()
+        yesterday = datetime(now.year, now.month, now.day, 0, 0, 0) - timedelta(days=1)
+
+        source_stat = SourcePrecalculatedStat.query.first()
+        if source_stat:
+            yesterday_end = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
+            if source_stat.period_end == yesterday_end:
+                return
+
+        binoms = Binom.query.all()
+        for binom in binoms:
+            ts_list = TrafficSource.query.filter_by(binom_id=binom.id).all()
+            for ts in ts_list:
+                if ts.credentials_id != -1:
+                    daily_sources_list = DailySource.query.filter(
+                        and_(DailySource.binom_source == binom.name,
+                             DailySource.traffic_source == ts.binom_ts_id,
+                             DailySource.fetched_at == yesterday)) \
+                        .all()
+
+                    for source in daily_sources_list:
+                        sources_stats_list = SourcePrecalculatedStat.query.filter(
+                            and_(SourcePrecalculatedStat.binom_source == source.binom_source,
+                                 SourcePrecalculatedStat.traffic_source == source.traffic_source,
+                                 SourcePrecalculatedStat.name == source.name,
+                                 SourcePrecalculatedStat.campaign_name == source.campaign_name)) \
+                            .all()
+
+                        for source_stat in sources_stats_list:
+                            source_stat.period_end = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
+                            source_stat.revenue += source.revenue
+                            source_stat.binom_clicks += source.binom_clicks
+                            source_stat.lp_clicks += source.lp_clicks
+                            source_stat.leads += source.leads
+
+                            source_stat.cost += source.cost
+                            source_stat.clicks += source.clicks
+                            source_stat.impressions += source.impressions
+
+                            if source_stat.leads != 0:
+                                source_stat.payout = source_stat.revenue / source_stat.leads
+
+                            source_stat.profit = source_stat.revenue - source_stat.cost
+
+                            if source_stat.clicks != 0:
+                                source_stat.cpc = source_stat.cost / source_stat.clicks
+                                source_stat.epc = source_stat.revenue / source_stat.clicks
+
+                            if source_stat.binom_clicks != 0:
+                                source_stat.lp_ctr = source_stat.lp_clicks / source_stat.binom_clicks * 100
+
+                            if source_stat.cost != 0:
+                                source_stat.roi = source_stat.profit / source_stat.cost * 100
+
+                            if source_stat.impressions != 0:
+                                source_stat.ctr = source_stat.clicks / source_stat.impressions * 100
+                                source_stat.cpm = source_stat.cost / source_stat.impressions * 1000
+
+                            db.session.add(source_stat)
+
+                        if len(sources_stats_list) == 0:
+                            source_stat = SourcePrecalculatedStat(source.name, source.campaign_name, source.revenue,
+                                                                  source.traffic_source)
+                            source_stat.period_end = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59,
+                                                              59)
+                            source_stat.period_start = yesterday
+                            source_stat.traffic_source = source.traffic_source
+                            source_stat.binom_source = source.binom_source
+                            source_stat.binom_clicks = source.binom_clicks
+                            source_stat.lp_clicks = source.lp_clicks
+                            source_stat.leads = source.leads
+
+                            source_stat.cost = source.cost
+                            source_stat.clicks = source.clicks
+                            source_stat.impressions = source.impressions
+                            if source_stat.leads != 0:
+                                source_stat.payout = source_stat.revenue / source_stat.leads
+
+                            source_stat.profit = source_stat.revenue - source_stat.cost
+
+                            if source_stat.clicks != 0:
+                                source_stat.cpc = source_stat.cost / source_stat.clicks
+                                source_stat.epc = source_stat.revenue / source_stat.clicks
+
+                            if source_stat.binom_clicks != 0:
+                                source_stat.lp_ctr = source_stat.lp_clicks / source_stat.binom_clicks * 100
+
+                            if source_stat.cost != 0:
+                                source_stat.roi = source_stat.profit / source_stat.cost * 100
+
+                            if source_stat.impressions != 0:
+                                source_stat.ctr = source_stat.clicks / source_stat.impressions * 100
+                                source_stat.cpm = source_stat.cost / source_stat.impressions * 1000
+
+                            db.session.add(source_stat)
+
+                    db.session.commit()
+
+                    all_stats = SourcePrecalculatedStat.query.all()
+                    for stat in all_stats:
+                        stat.period_end = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
+
+                    logging.debug(f'SourceIds stats updated for ts {ts.binom_ts_id}')

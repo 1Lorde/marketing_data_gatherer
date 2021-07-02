@@ -412,3 +412,58 @@ class TrafficSourceCredentials(db.Model):
 
     def __repr__(self):
         return f"TrafficSourceCredentials (name={self.name}, url={self.url}, api_key={self.api_key})"
+
+
+class SourcePrecalculatedStat(db.Model):
+    source_id = Column(Integer, primary_key=True)
+    name = Column(String)
+    campaign_name = Column(String)
+    description = Column(String)
+    traffic_source = Column(String)
+    binom_source = Column(String)
+    clicks = Column(Integer)
+    binom_clicks = Column(Integer)
+    impressions = Column(Integer)
+    lp_clicks = Column(Integer)
+    ctr = Column(Float)
+    lp_ctr = Column(Float)
+    leads = Column(Integer)
+    revenue = Column(Float)
+    cost = Column(Float)
+    profit = Column(Float)
+    roi = Column(Float)
+    payout = Column(Float)
+    cpc = Column(Float)
+    cpm = Column(Float)
+    epc = Column(Float)
+    status = Column(String)
+    period_start = Column(DateTime)
+    period_end = Column(DateTime)
+
+    def __init__(self, name, campaign_name, revenue, traffic_source):
+        self.name = name
+        self.campaign_name = campaign_name
+        self.traffic_source = traffic_source
+        self.binom_source = 'undefined'
+        self.clicks = 0
+        self.binom_clicks = 0
+        self.impressions = 0
+        self.lp_clicks = 0
+        self.ctr = 0
+        self.lp_ctr = 0
+        self.leads = 0
+        self.cost = 0
+        self.profit = 0
+        self.roi = 0
+        self.payout = 0
+        self.cpc = 0
+        self.cpm = 0
+        self.epc = 0
+        self.revenue = revenue
+        self.cost = 0
+        self.profit = 0
+        self.status = 'undefined'
+
+    def __repr__(self):
+        return f"SourcePrecalculatedStat (name={self.name}, traffic source={self.traffic_source}, revenue={self.revenue}, cost={self.cost}, profit={self.profit}," \
+               f" campaign_name={self.campaign_name}, period_start={self.period_start}, period_end={self.period_end})"
