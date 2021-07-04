@@ -836,6 +836,7 @@ class ApiUtils:
                     else:
                         campaign_factor_var = getattr(campaign, getattr(rule, f'factor_var{num}'))
                         if getattr(rule, f'factor_var{num}') == 'payout' and campaign_factor_var <= 0:
+                            boolean_list.append(False)
                             continue
                         boolean_list.append(operator(campaign_value, factor * campaign_factor_var))
 
@@ -944,52 +945,61 @@ class ApiUtils:
                 sources_stats_list.append(source_stat)
 
             appropriate_sources = []
-            if len(sources_stats_list) != 0:
-                campaign_name = sources_stats_list[0].campaign_name
-                traffic_source = sources_stats_list[0].traffic_source
-                binom_source = sources_stats_list[0].binom_source
 
-            for source in sources_stats_list:
-                boolean_list = []
-                for num in range(int(rule.conditions)):
-                    num = num + 1
-                    source_value = getattr(source, getattr(rule, f'param{num}'))
-                    operator = get_comparison_operator(getattr(rule, f'sign{num}'))
+            unique_campaigns_names = set()
+            [unique_campaigns_names.add(source.campaign_name) for source in sources_stats_list if source.campaign_name not in unique_campaigns_names]
 
-                    factor = getattr(rule, f'factor{num}')
-                    if factor == 0:
-                        rule_value = getattr(rule, f'value{num}')
-                        boolean_list.append(operator(source_value, rule_value))
-                    else:
-                        attr = getattr(rule, f'factor_var{num}')
-                        factor_var = getattr(source, attr)
-                        if attr == 'payout':
-                            campaign = Campaign.query.filter_by(name=source.campaign_name,
-                                                                traffic_source=source.traffic_source,
-                                                                binom_source=source.binom_source).first()
-                            if not campaign:
-                                continue
+            for campaign_name in unique_campaigns_names:
+                binom_source = None
+                traffic_source = None
+                for source in sources_stats_list:
+                    if campaign_name == source.campaign_name:
+                        if not binom_source and not traffic_source:
+                            binom_source = source.binom_source
+                            traffic_source = source.traffic_source
 
-                            factor_var = campaign.payout
-                            if factor_var <= 0:
-                                continue
+                        boolean_list = []
+                        for num in range(int(rule.conditions)):
+                            num = num + 1
+                            source_value = getattr(source, getattr(rule, f'param{num}'))
+                            operator = get_comparison_operator(getattr(rule, f'sign{num}'))
 
-                        boolean_list.append(operator(source_value, factor * factor_var))
+                            factor = getattr(rule, f'factor{num}')
+                            if factor == 0:
+                                rule_value = getattr(rule, f'value{num}')
+                                boolean_list.append(operator(source_value, rule_value))
+                            else:
+                                attr = getattr(rule, f'factor_var{num}')
+                                factor_var = getattr(source, attr)
+                                if attr == 'payout':
+                                    campaign = Campaign.query.filter_by(name=source.campaign_name,
+                                                                        traffic_source=source.traffic_source,
+                                                                        binom_source=source.binom_source).first()
+                                    if not campaign:
+                                        boolean_list.append(False)
+                                        continue
 
-                if all(boolean_list):
-                    appropriate_sources.append(source.name)
+                                    factor_var = campaign.payout
+                                    if factor_var <= 0:
+                                        boolean_list.append(False)
+                                        continue
 
-            if len(appropriate_sources) != 0:
-                action = get_source_action(getattr(rule, 'action'), self)
+                                boolean_list.append(operator(source_value, factor * factor_var))
 
-                binom = Binom.query.filter_by(name=binom_source).first()
-                ts = TrafficSource.query.filter(
-                    and_(
-                        TrafficSource.binom_ts_id == traffic_source,
-                        TrafficSource.binom_id == binom.id
-                    )
-                ).first()
-                action(campaign_name, appropriate_sources, ts, rule)
+                        if all(boolean_list):
+                            appropriate_sources.append(source.name)
+
+                if len(appropriate_sources) != 0:
+                    action = get_source_action(getattr(rule, 'action'), self)
+
+                    binom = Binom.query.filter_by(name=binom_source).first()
+                    ts = TrafficSource.query.filter(
+                        and_(
+                            TrafficSource.binom_ts_id == traffic_source,
+                            TrafficSource.binom_id == binom.id
+                        )
+                    ).first()
+                    action(campaign_name, appropriate_sources, ts, rule)
 
     def calculate_sources_stats(self):
         now = datetime.now()
