@@ -57,7 +57,7 @@
 {% block message_body %}
     <div class="container">
         {% if paused_list %}
-            <ol>
+            <ul>
                 {% for camp in paused_list %}
                     <div class="box block subtitle is-6">
                         <li class="ml-6">
@@ -84,7 +84,7 @@
                         </li>
                     </div>
                 {% endfor %}
-            </ol>
+            </ul>
         {% else %}
             <p>No campaigns here</p>
         {% endif %}

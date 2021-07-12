@@ -19,8 +19,7 @@ def get_path_args():
     return page, start, end, ts
 
 
-def get_pagination_metadata_from_query(page, data_query):
-    rows_per_page = 12
+def get_pagination_metadata_from_query(page, data_query, rows_per_page=12):
     last_page = math.ceil(data_query.count() / rows_per_page)
 
     return {'current': page, 'next': page + 1, 'previous': page - 1,

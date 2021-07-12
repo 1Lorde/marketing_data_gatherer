@@ -241,14 +241,15 @@ def daily_campaigns():
 
 @app.route('/campaigns/paused', methods=['GET', 'POST'])
 def paused_campaigns():
-    campaigns_list = PausedCampaign.query.all()
-
-    if len(campaigns_list) == 0:
+    page_arg = request.args.get('page', 1, type=int)
+    pagination_metadata = get_pagination_metadata_from_query(page_arg, PausedCampaign.query)
+    paused_campaigns_list = paginate_data(pagination_metadata, PausedCampaign.query)
+    if len(paused_campaigns_list) == 0:
         return render_empty_campaigns('paused_campaigns.html', None)
 
     return render_template('paused_campaigns.html',
-                           pagination_data=None,
-                           paused_list=campaigns_list)
+                           paused_list=paused_campaigns_list,
+                           pagination_data=pagination_metadata)
 
 
 @app.route('/campaigns/paused/add', methods=['GET', 'POST'])
@@ -499,14 +500,16 @@ def daily_sources():
 
 @app.route('/sources/paused', methods=['GET'])
 def paused_sources():
-    sources_list = PausedSource.query.all()
+    page_arg = request.args.get('page', 1, type=int)
+    pagination_metadata = get_pagination_metadata_from_query(page_arg, PausedSource.query, 6)
+    paused_sources_list = paginate_data(pagination_metadata, PausedSource.query)
 
-    if len(sources_list) == 0:
+    if len(paused_sources_list) == 0:
         return render_empty_sources('paused_campaigns.html', None)
 
     return render_template('paused_sources.html',
-                           pagination_data=None,
-                           paused_list=sources_list)
+                           paused_list=paused_sources_list,
+                           pagination_data=pagination_metadata)
 
 
 @app.route('/sources/paused/add', methods=['GET', 'POST'])
