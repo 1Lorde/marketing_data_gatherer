@@ -1,6 +1,7 @@
-# marketing_data_gatherer
+# Marketing Data Gatherer
+![banner](https://raw.githubusercontent.com/1Lorde/marketing_data_gatherer/dev/img/stats.png)
 
-**marketing_data_gatherer** - includes script for gathering specific marketing data and Flask web application for demonstrating and management.
+**marketing_data_gatherer** - project, which consists of script for gathering specific marketing data and Flask web application for demonstrate and manage this data. Also user can set rules for starting or pausing specific campaigns, when condition is true.
 
 ## Structure
 
@@ -25,3 +26,8 @@
 1) Activate venv: `source venv/bin/activate`.
 2) Run web app: `python3 run_web.py`.
 3) Run script: `python3 run_gatherer.py`.
+
+## Screenshots
+![screenshot_1](https://raw.githubusercontent.com/1Lorde/marketing_data_gatherer/dev/img/binoms.png)
+![screenshot_2](https://raw.githubusercontent.com/1Lorde/marketing_data_gatherer/dev/img/add_rule.png)
+![screenshot_3](https://raw.githubusercontent.com/1Lorde/marketing_data_gatherer/dev/img/rules_list.png)
